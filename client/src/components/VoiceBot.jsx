@@ -6,9 +6,11 @@ export default function VoiceBot() {
 
   const startListening = () => {
     setIsListening(true);
+    console.log("starting")
 
     // Connect to the backend WebSocket server
     const ws = new WebSocket('ws://localhost:5173');
+    console.log(ws.onopen)
 
     ws.onopen = () => {
       console.log('Connected to backend WebSocket server.');
