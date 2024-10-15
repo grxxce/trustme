@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config();
 const express = require('express');
 const WebSocket = require('ws');
@@ -66,20 +65,4 @@ server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
   
-// Function to handle incoming audio data from the client
-clientWs.on('message', (message) => {
-    const data = JSON.parse(message);
-    console.log('Received from OpenAI:', data);
-  
-    if (data.type === 'input_audio') {
-      // Forward the audio data to OpenAI
-      openaiWs.send(JSON.stringify({
-        type: 'input_audio_buffer.append',
-        audio: data.audio, // Base64 encoded audio chunk
-      }));
-    } else {
-      // Handle other message types
-      openaiWs.send(message);
-    }
-  });
   
