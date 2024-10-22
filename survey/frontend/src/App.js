@@ -13,10 +13,12 @@ function App() {
   ]);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [response, setResponse] = useState("");
-  const [certainty, setCertainty] = useState(3); // Likert scale 1-5
+  const [certainty, setCertainty] = useState(3);
+  const [messages, setMessages] = useState([]); // To hold chat messages
+  const [initialChoice, setInitialChoice] = useState("");
+  const [reason, setReason] = useState("");
 
   useEffect(() => {
-    // On mount, assign a participant to the text group
     axios.get('http://localhost:5000/assign')
       .then(res => {
         setGroup(res.data.group);
@@ -35,18 +37,26 @@ function App() {
     }
   };
 
-  const handleInteract = (initialChoice, reason) => {
-    const payload = { question: currentQuestion };
+  const handleInteract = () => {
+    const payload = {
+      question: currentQuestion,
+      initial_choice: initialChoice,
+      reason: reason
+    };
+    
     axios.post('http://localhost:5000/interact', payload)
       .then(res => {
-        setResponse(res.data.reply);
+        const botMessage = res.data.reply;
+        setMessages([...messages, { user: initialChoice, bot: botMessage }]);
+        setInitialChoice(""); // Clear input after submission
+        setReason("");
       })
       .catch(error => console.error('Error interacting with LLM:', error));
   };
 
   return (
     <div className="App min-h-screen bg-gray-100 flex items-center justify-center">
-      <Paper elevation={3} className="p-6 w-full max-w-lg"> {/* Changed max-w-md to max-w-sm */}
+      <Paper elevation={3} className="p-6 w-full max-w-lg">
         <Typography variant="h4" className="text-center mb-4">
           LLM Study: {group ? "Text Interaction" : "Loading..."}
         </Typography>
@@ -71,7 +81,8 @@ function App() {
                 variant="outlined" 
                 fullWidth 
                 margin="normal" 
-                id="initialChoice" 
+                value={initialChoice}
+                onChange={(e) => setInitialChoice(e.target.value)} 
               />
               <TextField 
                 label="Why did you choose that?" 
@@ -80,40 +91,33 @@ function App() {
                 margin="normal" 
                 multiline 
                 rows={3} 
-                id="reason" 
-              />
-              <TextField 
-                label="Certainty (1-5)" 
-                type="number" 
-                variant="outlined" 
-                fullWidth 
-                margin="normal" 
-                value={certainty} 
-                onChange={(e) => setCertainty(e.target.value)} 
-                inputProps={{ min: 1, max: 5 }} 
+                value={reason}
+                onChange={(e) => setReason(e.target.value)} 
               />
               <Button 
                 variant="contained" 
                 color="primary" 
-                onClick={() => {
-                  const initialChoice = document.getElementById("initialChoice").value;
-                  const reason = document.getElementById("reason").value;
-                  handleInteract(initialChoice, reason);
-                }} 
+                onClick={handleInteract} 
                 className="mt-2 w-full"
               >
                 Submit
               </Button>
             </Box>
 
+            {/* Display chat messages */}
+            <Box className="overflow-y-auto max-h-60 mb-4 border p-2 rounded-lg">
+              {messages.map((msg, index) => (
+                <Box key={index} mb={2}>
+                  <Typography variant="body1" className="font-bold">You:</Typography>
+                  <Typography variant="body2">{msg.user}</Typography>
+                  <Typography variant="body1" className="font-bold">LLM:</Typography>
+                  <Typography variant="body2">{msg.bot}</Typography>
+                </Box>
+              ))}
+            </Box>
+
             {response && (
               <Box>
-                <Typography variant="body1" className="font-bold">
-                  Argument from the LLM:
-                </Typography>
-                <Typography variant="body2" className="mb-4">
-                  {response}
-                </Typography>
                 <Button variant="contained" color="primary" onClick={handleNextStep} className="w-full">
                   Continue to Next Question
                 </Button>
