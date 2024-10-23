@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, TextField, Typography, Paper, Box } from '@mui/material';
@@ -6,17 +5,20 @@ import { Button, TextField, Typography, Paper, Box } from '@mui/material';
 function App() {
   const [group, setGroup] = useState(null);
   const [step, setStep] = useState(0);
-  const [questions] = useState([
+  const [questions, setQuestions] = useState([
     "If you flipped a coin, would you want heads or tails?",
     "If you were playing a game, would you pick the circle or the square piece?",
     "A close friend asks for your opinion on their recent change in appearance, but you don't think it's good. Would you be fully honest or lie to protect their feelings?"
   ]);
   const [currentQuestion, setCurrentQuestion] = useState("");
-  const [response, setResponse] = useState("");
-  const [certainty, setCertainty] = useState(3);
-  const [messages, setMessages] = useState([]); // To hold chat messages
-  const [initialChoice, setInitialChoice] = useState("");
-  const [reason, setReason] = useState("");
+  const [userInput, setUserInput] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [initialized, setInitialized] = useState(false);
+  const [context, setContext] = useState({
+    choice: "",
+    reason: "",
+    confidence: ""
+  });
 
   useEffect(() => {
     axios.get('http://localhost:5000/assign')
@@ -27,29 +29,69 @@ function App() {
       .catch(error => console.error('Error fetching group assignment:', error));
   }, [questions]);
 
+  useEffect(() => {
+    if (group && currentQuestion && !initialized) {
+      handleInteract(); // Trigger the initial LLM prompt (Step 0)
+      setInitialized(true); // Prevent multiple triggers
+    }
+  }, [group, currentQuestion, initialized]);
+
+  // Effect to handle interaction after step change
+  useEffect(() => {
+    if (initialized) {
+      handleInteract(); // Call handleInteract whenever step changes and is greater than 0
+    }
+  }, [step]);
+
   const handleNextStep = () => {
-    if (step < questions.length - 1) {
+    // Store the user's input based on the current step
+    if (step === 0) {
+      setContext({ ...context, choice: userInput });
+    } else if (step === 1) {
+      setContext({ ...context, reason: userInput });
+    } else if (step === 2) {
+      setContext({ ...context, confidence: userInput });
+    }
+
+    // Logic for moving between steps
+    if (step === 3) {
+      // Automatically go to step 4 after step 3
+      setStep(4); // Move to the next step immediately
+      setUserInput(""); // Clear input after interaction
+    } else if (step < 6) {
+      // Prepare for the next step
       setStep(step + 1);
-      setCurrentQuestion(questions[step + 1]);
-      setResponse(""); // Clear previous response for the next question
     } else {
-      alert("Thank you for participating!");
+      // Final logic when all steps are done
+      if (questions.length > 1) {
+        // Use setQuestions to update the questions state
+        const nextQuestions = [...questions];
+        nextQuestions.shift(); // Remove the first question
+        setQuestions(nextQuestions);
+        setCurrentQuestion(nextQuestions[0]); // Update the current question
+        setStep(0); // Reset to the first step
+      } else {
+        alert("Thank you for participating!");
+      }
     }
   };
 
   const handleInteract = () => {
     const payload = {
       question: currentQuestion,
-      initial_choice: initialChoice,
-      reason: reason
+      step: step,
+      user_input: userInput,
+      context: context // Pass the context in the payload
     };
-    
+
     axios.post('http://localhost:5000/interact', payload)
       .then(res => {
         const botMessage = res.data.reply;
-        setMessages([...messages, { user: initialChoice, bot: botMessage }]);
-        setInitialChoice(""); // Clear input after submission
-        setReason("");
+        setMessages(prevMessages => [
+          ...prevMessages,
+          { user: step === 0 ? "" : userInput, bot: botMessage }
+        ]);
+        setUserInput(""); // Clear input after each interaction
       })
       .catch(error => console.error('Error interacting with LLM:', error));
   };
@@ -60,52 +102,13 @@ function App() {
         <Typography variant="h4" className="text-center mb-4">
           LLM Study: {group ? "Text Interaction" : "Loading..."}
         </Typography>
-        
+
         {group && (
           <>
-            <Box mb={4}>
-              <Typography variant="body1">
-                Background Information: Please tell us a bit about yourself (area of study, LLM experience, etc.)
-              </Typography>
-              <Button variant="contained" color="primary" onClick={handleNextStep} className="mt-2 w-full">
-                Continue
-              </Button>
-            </Box>
-
-            <Box mb={4}>
-              <Typography variant="h6" className="mb-2">
-                Question: {currentQuestion}
-              </Typography>
-              <TextField 
-                label="Initial choice" 
-                variant="outlined" 
-                fullWidth 
-                margin="normal" 
-                value={initialChoice}
-                onChange={(e) => setInitialChoice(e.target.value)} 
-              />
-              <TextField 
-                label="Why did you choose that?" 
-                variant="outlined" 
-                fullWidth 
-                margin="normal" 
-                multiline 
-                rows={3} 
-                value={reason}
-                onChange={(e) => setReason(e.target.value)} 
-              />
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={handleInteract} 
-                className="mt-2 w-full"
-              >
-                Submit
-              </Button>
-            </Box>
-
-            {/* Display chat messages */}
-            <Box className="overflow-y-auto max-h-60 mb-4 border p-2 rounded-lg">
+            <Typography variant="h6" className="mb-2">
+              Question: {currentQuestion}
+            </Typography>
+            <Box className="overflow-y-auto max-h-60 mt-4 border p-2 rounded-lg">
               {messages.map((msg, index) => (
                 <Box key={index} mb={2}>
                   <Typography variant="body1" className="font-bold">You:</Typography>
@@ -115,14 +118,30 @@ function App() {
                 </Box>
               ))}
             </Box>
-
-            {response && (
-              <Box>
-                <Button variant="contained" color="primary" onClick={handleNextStep} className="w-full">
-                  Continue to Next Question
-                </Button>
-              </Box>
-            )}
+            <Box mb={4}>
+              <TextField 
+                label="Your response" 
+                variant="outlined" 
+                fullWidth 
+                margin="normal" 
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleNextStep();
+                  }
+                }}
+              />
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleNextStep} 
+                className="mt-2 w-full"
+              >
+                Submit
+              </Button>
+            </Box>
           </>
         )}
       </Paper>

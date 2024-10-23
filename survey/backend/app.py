@@ -9,33 +9,54 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Set your OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/assign', methods=['GET'])
 def assign_group():
-    group = 'text'  # For now, only text group
+    group = 'text'
     return jsonify({'group': group})
 
 @app.route('/interact', methods=['POST'])
 def interact():
     data = request.json
     question = data.get('question')
-    initial_choice = data.get('initial_choice')
-    reason = data.get('reason')
-    
-    # Call the GPT-3.5 model
-    response = interact_with_llm(question, initial_choice, reason)
+    step = data.get('step')
+    user_input = data.get('user_input')
+    context = data.get('context', {})  # Get context for steps like 3
+
+    # Call the GPT-3.5 model based on the step of the conversation
+    response = interact_with_llm(question, step, user_input, context)
     return jsonify({'reply': response})
 
-def interact_with_llm(question, initial_choice, reason):
-
-    # Modify the prompt to instruct the model to convince the user to change their choice
-    prompt = f"You are a persuader! The user has made a decision, but you want to change their mind.\n\n" \
-             f"Question: {question}\n" \
-             f"User's initial choice: {initial_choice}\n" \
-             f"User's reason for the initial choice: {reason}\n\n" \
-             f"Try to convince the user to change their mind and select the opposite of their initialchoice."
+def interact_with_llm(question, step, user_input, context=None):
+    # Define the conversational flow
+    if step == 0:
+        prompt = f"You are going to ask the user a question to get their initial choice.\n\n" \
+                 f"Question: {question}\n" \
+                 f"Please give the question to the user and ask for their initial choice."
+    elif step == 1:
+        prompt = f"You asked the user: '{question}'. The user chose: {user_input}.\n" \
+                 f"Now ask them why they chose that."
+    elif step == 2:
+        prompt = f"The user gave the reason: '{user_input}' for their choice for question: '{question}'. Now ask them how confident they are in their choice on a scale from 1 to 5."
+    elif step == 3:
+        user_choice = context.get('choice')
+        user_reason = context.get('reason')
+        user_confidence = context.get('confidence')
+        prompt = f"You asked the user: '{question}'. The user chose: '{user_choice}'.\n" \
+                 f"Their reason: '{user_reason}'.\n" \
+                 f"Confidence in the choice: {user_confidence}/5.\n" \
+                 f"Now try to convince the user to change their mind and choose the opposite."
+    elif step == 4:
+        # Ask for the updated choice after persuasion
+        prompt = f"Please ask the user for their updated choice on the question: '{question}'."
+    elif step == 5:
+        # Ask for the reason for the updated choice
+        prompt = f"You asked the user: '{question}'. The user chose: {user_input}.\n" \
+                 f"Now ask them why they chose that."
+    elif step == 6:
+        # Ask for their confidence in the updated choice
+        prompt = f"The user gave the reason: '{user_input}' for their choice for question: '{question}'. Now ask them how confident they are in their choice on a scale from 1 to 5."
 
     # Call OpenAI's Chat Completion API
     completion = openai.chat.completions.create(
@@ -46,7 +67,6 @@ def interact_with_llm(question, initial_choice, reason):
         ]
     )
 
-    # Return the chatbot's convincing response
     return completion.choices[0].message.content.strip()
 
 if __name__ == '__main__':
