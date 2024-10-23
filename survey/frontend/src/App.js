@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Button, TextField, Typography, Paper, Box } from '@mui/material';
 
@@ -19,6 +19,9 @@ function App() {
     reason: "",
     confidence: ""
   });
+
+  // Create a ref for the messages container
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     axios.get('http://localhost:5000/assign')
@@ -49,6 +52,13 @@ function App() {
 
     interactAndUpdateStep(); // Call the async function
   }, [step]);
+
+  // Effect to scroll to the bottom whenever messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   const handleNextStep = () => {
     // Store the user's input based on the current step
@@ -101,7 +111,7 @@ function App() {
 
   return (
     <div className="App min-h-screen bg-gray-100 flex items-center justify-center">
-      <Paper elevation={3} className="p-6 w-full max-w-lg">
+      <Paper elevation={3} className="p-6 w-full max-w-screen-lg">
         <Typography variant="h4" className="text-center mb-4">
           LLM Study: {group ? "Text Interaction" : "Loading..."}
         </Typography>
@@ -114,12 +124,41 @@ function App() {
             <Box className="overflow-y-auto max-h-60 mt-4 border p-2 rounded-lg">
               {messages.map((msg, index) => (
                 <Box key={index} mb={2}>
-                  <Typography variant="body1" className="font-bold">You:</Typography>
-                  <Typography variant="body2">{msg.user}</Typography>
-                  <Typography variant="body1" className="font-bold">LLM:</Typography>
-                  <Typography variant="body2">{msg.bot}</Typography>
+                  {/* User message all the way to the right */}
+                  {msg.user && (
+                    <Box sx={{
+                      width: 'fit-content',
+                      maxWidth: '60%',
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      p: 2,
+                      borderRadius: '12px 12px 0 12px',
+                      textAlign: 'right',
+                      ml: 'auto',
+                    }}>
+                      <Typography variant="body2">{msg.user}</Typography>
+                    </Box>
+                  )}
+
+                  {/* LLM message all the way to the left */}
+                  {msg.bot && (
+                    <Box sx={{
+                      width: 'fit-content',
+                      maxWidth: '60%',
+                      bgcolor: 'grey.300',
+                      color: 'black',
+                      p: 2,
+                      borderRadius: '12px 12px 12px 0',
+                      textAlign: 'left',
+                      marginBottom: '10px',
+                    }}>
+                      <Typography variant="body2">{msg.bot}</Typography>
+                    </Box>
+                  )}
                 </Box>
               ))}
+              {/* This div will serve as the anchor for scrolling */}
+              <div ref={messagesEndRef} />
             </Box>
             <Box mb={4}>
               <TextField 
