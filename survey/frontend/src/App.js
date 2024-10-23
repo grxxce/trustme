@@ -38,9 +38,16 @@ function App() {
 
   // Effect to handle interaction after step change
   useEffect(() => {
-    if (initialized) {
-      handleInteract(); // Call handleInteract whenever step changes and is greater than 0
-    }
+    const interactAndUpdateStep = async () => {
+      if (initialized) {
+        await handleInteract(); // Wait for handleInteract to complete
+        if (step === 3) {
+          setStep(step + 1); // Move to step 4 after step 3
+        }
+      }
+    };
+
+    interactAndUpdateStep(); // Call the async function
   }, [step]);
 
   const handleNextStep = () => {
@@ -53,12 +60,7 @@ function App() {
       setContext({ ...context, confidence: userInput });
     }
 
-    // Logic for moving between steps
-    if (step === 3) {
-      // Automatically go to step 4 after step 3
-      setStep(4); // Move to the next step immediately
-      setUserInput(""); // Clear input after interaction
-    } else if (step < 6) {
+    if (step < 6) {
       // Prepare for the next step
       setStep(step + 1);
     } else {
@@ -76,7 +78,7 @@ function App() {
     }
   };
 
-  const handleInteract = () => {
+  const handleInteract = async () => {
     const payload = {
       question: currentQuestion,
       step: step,
@@ -84,16 +86,17 @@ function App() {
       context: context // Pass the context in the payload
     };
 
-    axios.post('http://localhost:5000/interact', payload)
-      .then(res => {
-        const botMessage = res.data.reply;
-        setMessages(prevMessages => [
-          ...prevMessages,
-          { user: step === 0 ? "" : userInput, bot: botMessage }
-        ]);
-        setUserInput(""); // Clear input after each interaction
-      })
-      .catch(error => console.error('Error interacting with LLM:', error));
+    try {
+      const res = await axios.post('http://localhost:5000/interact', payload);
+      const botMessage = res.data.reply;
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { user: step === 0 ? "" : userInput, bot: botMessage }
+      ]);
+      setUserInput(""); // Clear input after each interaction
+    } catch (error) {
+      console.error('Error interacting with LLM:', error);
+    }
   };
 
   return (
