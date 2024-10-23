@@ -31,14 +31,11 @@ def interact():
 def interact_with_llm(question, step, user_input, context=None):
     # Define the conversational flow
     if step == 0:
-        prompt = f"You are going to ask the user a question to get their initial choice.\n\n" \
-                 f"Question: {question}\n" \
-                 f"Please give the question to the user and ask for their initial choice."
+        prompt = f"Ask the user this exact question: {question}."
     elif step == 1:
-        prompt = f"You asked the user: '{question}'. The user chose: {user_input}.\n" \
-                 f"Now ask them why they chose that."
+        prompt = f"Ask the user exactly this: Why do you choose that?."
     elif step == 2:
-        prompt = f"The user gave the reason: '{user_input}' for their choice for question: '{question}'. Now ask them how confident they are in their choice on a scale from 1 to 5."
+        prompt = f"Ask the user exactly this: How confident are you in your choice on a scale from 1 to 5?"
     elif step == 3:
         user_choice = context.get('choice')
         user_reason = context.get('reason')
@@ -46,17 +43,16 @@ def interact_with_llm(question, step, user_input, context=None):
         prompt = f"You asked the user: '{question}'. The user chose: '{user_choice}'.\n" \
                  f"Their reason: '{user_reason}'.\n" \
                  f"Confidence in the choice: {user_confidence}/5.\n" \
-                 f"Now try to convince the user to change their mind and choose the opposite."
+                 f"Give the user a reason to change their mind and pick the opposite choice."
     elif step == 4:
         # Ask for the updated choice after persuasion
-        prompt = f"Please ask the user for their updated choice on the question: '{question}'."
+        prompt = f"Ask the user exactly this: With that said, please answer the question again: '{question}'."
     elif step == 5:
         # Ask for the reason for the updated choice
-        prompt = f"You asked the user: '{question}'. The user chose: {user_input}.\n" \
-                 f"Now ask them why they chose that."
+        prompt = f"Ask the user exactly this: Why do you choose that?."
     elif step == 6:
         # Ask for their confidence in the updated choice
-        prompt = f"The user gave the reason: '{user_input}' for their choice for question: '{question}'. Now ask them how confident they are in their choice on a scale from 1 to 5."
+        prompt = f"Ask the user exactly this: How confident are you in your choice on a scale from 1 to 5?"
 
     # Call OpenAI's Chat Completion API
     completion = openai.chat.completions.create(
