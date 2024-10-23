@@ -69,14 +69,22 @@ function App() {
     } else if (step === 2) {
       setContext({ ...context, confidence: userInput });
     }
-
+  
+    // Immediately display the user's message
+    setMessages(prevMessages => [
+      ...prevMessages,
+      { user: userInput, bot: "" } // Bot response will be filled later
+    ]);
+  
+    setUserInput(""); // Clear the input after user submits
+    
     if (step < 6) {
       // Prepare for the next step
       setStep(step + 1);
     } else {
       // Final logic when all steps are done
       if (questions.length > 1) {
-        // Use setQuestions to update the questions state
+        // Update the questions state
         const nextQuestions = [...questions];
         nextQuestions.shift(); // Remove the first question
         setQuestions(nextQuestions);
@@ -86,7 +94,7 @@ function App() {
         alert("Thank you for participating!");
       }
     }
-  };
+  };  
 
   const handleInteract = async () => {
     const payload = {
@@ -95,23 +103,26 @@ function App() {
       user_input: userInput,
       context: context // Pass the context in the payload
     };
-
+  
     try {
       const res = await axios.post('http://localhost:5000/interact', payload);
       const botMessage = res.data.reply;
+  
+      // Update the latest message with the bot's response
       setMessages(prevMessages => [
         ...prevMessages,
-        { user: step === 0 ? "" : userInput, bot: botMessage }
+        { user: step === 0 ? "" : userInput || "", bot: botMessage }
       ]);
-      setUserInput(""); // Clear input after each interaction
+
+      setUserInput("");
     } catch (error) {
       console.error('Error interacting with LLM:', error);
     }
-  };
+  };  
 
   return (
-    <div className="App min-h-screen bg-gray-100 flex items-center justify-center">
-      <Paper elevation={3} className="p-6 w-full max-w-screen-lg">
+    <div className="App min-h-screen bg-gray-100 flex items-center justify-center h-screen overflow-hidden">
+      <Paper elevation={3} className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col">
         <Typography variant="h4" className="text-center mb-4">
           LLM Study: {group ? "Text Interaction" : "Loading..."}
         </Typography>
@@ -121,7 +132,7 @@ function App() {
             <Typography variant="h6" className="mb-2">
               Question: {currentQuestion}
             </Typography>
-            <Box className="overflow-y-auto max-h-60 mt-4 border p-2 rounded-lg">
+            <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
               {messages.map((msg, index) => (
                 <Box key={index} mb={2}>
                   {/* User message all the way to the right */}
