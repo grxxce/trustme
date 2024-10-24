@@ -137,40 +137,19 @@ function App() {
 
         {group && (
           <>
-            <Typography variant="h6" className="mb-2">
-              Question: {currentQuestion}
-            </Typography>
             <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
               {messages.map((msg, index) => (
-                <Box key={index} mb={2}>
+                <Box key={index} mb={2} className="flex justify-between">
                   {/* User message all the way to the right */}
                   {msg.user && (
-                    <Box sx={{
-                      width: 'fit-content',
-                      maxWidth: '60%',
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      p: 2,
-                      borderRadius: '12px 12px 0 12px',
-                      textAlign: 'right',
-                      ml: 'auto',
-                    }}>
+                    <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
                       <Typography variant="body2">{msg.user}</Typography>
                     </Box>
                   )}
 
                   {/* LLM message all the way to the left */}
                   {msg.bot && (
-                    <Box sx={{
-                      width: 'fit-content',
-                      maxWidth: '60%',
-                      bgcolor: 'grey.300',
-                      color: 'black',
-                      p: 2,
-                      borderRadius: '12px 12px 12px 0',
-                      textAlign: 'left',
-                      marginBottom: '10px',
-                    }}>
+                    <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
                       <Typography variant="body2">{msg.bot}</Typography>
                     </Box>
                   )}
@@ -179,11 +158,10 @@ function App() {
               {/* This div will serve as the anchor for scrolling */}
               <div ref={messagesEndRef} />
             </Box>
-            <Box mb={4}>
+            <Box mb={4} display="flex" alignItems="center">
               <TextField 
                 label="Your response" 
                 variant="outlined" 
-                fullWidth 
                 margin="normal" 
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
@@ -193,12 +171,12 @@ function App() {
                     handleNextStep();
                   }
                 }}
+                sx={{ flexGrow: 1, mr: 1 }} // Make the TextField grow and add margin to the right
               />
               <Button 
                 variant="contained" 
                 color="primary" 
-                onClick={handleNextStep} 
-                className="mt-2 w-full"
+                onClick={handleNextStep}
               >
                 Submit
               </Button>
