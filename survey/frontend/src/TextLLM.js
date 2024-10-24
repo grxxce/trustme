@@ -94,7 +94,11 @@ function TextLLM() {
         setCurrentQuestion(nextQuestions[0]); // Update the current question
         setStep(0); // Reset to the first step
       } else {
-        alert("Thank you for participating!");
+        const finalMessage = "Thank you for participating!";
+        setMessages(prevMessages => [
+          ...prevMessages,
+          { user: "", bot: finalMessage }
+        ]);
       }
     }
   };  
