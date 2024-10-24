@@ -56,7 +56,7 @@ def interact_with_llm(question, step, user_input, context=None):
 
     # Call OpenAI's Chat Completion API
     completion = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are a persuasive assistant in a study to see how LLMs can persuade people to change their choices. I'm going to tell you what to output and I'd like to receive that output, nothing else."},
             {"role": "user", "content": prompt}
