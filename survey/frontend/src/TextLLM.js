@@ -21,6 +21,7 @@ function TextLLM() {
     reason: "",
     confidence: ""
   });
+  const [error, setError] = useState(false); // Error state for TextField
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   const [surveyCompleted, setSurveyCompleted] = useState(false);
@@ -63,6 +64,13 @@ function TextLLM() {
   }, [messages]);
 
   const handleNextStep = () => {
+    if (!userInput.trim()) {
+      setError(true); // Set error state if input is empty
+      return;
+    }
+    // Clear the error when valid input is given
+    setError(false);
+
     // Store the user's input based on the current step
     if (step === 0) {
       setContext({ ...context, choice: userInput });
@@ -71,15 +79,15 @@ function TextLLM() {
     } else if (step === 2) {
       setContext({ ...context, confidence: userInput });
     }
-  
+
     // Immediately display the user's message
     setMessages(prevMessages => [
       ...prevMessages,
       { user: userInput, bot: "" } // Bot response will be filled later
     ]);
-  
+
     setUserInput(""); // Clear the input after user submits
-    
+
     if (step < 6) {
       // Prepare for the next step
       setStep(step + 1);
@@ -210,6 +218,8 @@ function TextLLM() {
                 margin="normal" 
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
+                error={error}
+                helperText={error ? "Response can't be empty" : ""}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
