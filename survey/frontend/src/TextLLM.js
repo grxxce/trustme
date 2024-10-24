@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Button, TextField, Typography, Paper, Box, CircularProgress } from '@mui/material';
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useNavigate } from "react-router-dom";
 
 function TextLLM() {
   const [group, setGroup] = useState(null);
@@ -19,9 +21,10 @@ function TextLLM() {
     reason: "",
     confidence: ""
   });
-
   // Create a ref for the messages container
   const messagesEndRef = useRef(null);
+  // Allow navigation back to home
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get('http://localhost:5000/assign')
@@ -130,6 +133,17 @@ function TextLLM() {
 
   return (
     <div className="App min-h-screen bg-gray-100 flex items-center justify-center h-screen overflow-hidden">
+      {/* Back to Home Button */}
+      <Box className="absolute top-4 left-4">
+        <Button
+          variant="text"
+          color="primary"
+          onClick={() => navigate("/")} // Navigate back to home
+          startIcon={<ArrowBackIcon />}
+        >
+          Back to Home
+        </Button>
+      </Box>
       <Paper elevation={3} className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col">
         <Typography variant="h4" className="text-center mb-4">
           LLM Study: {group ? "Text Interaction" : "Loading..."}
