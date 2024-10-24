@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Button, TextField, Typography, Paper, Box } from '@mui/material';
+import { Button, TextField, Typography, Paper, Box, CircularProgress } from '@mui/material';
 
 function App() {
   const [group, setGroup] = useState(null);
@@ -103,16 +103,24 @@ function App() {
       user_input: userInput,
       context: context // Pass the context in the payload
     };
-  
+
+    setMessages(prevMessages => [
+      ...prevMessages,
+      { user: "", bot: <CircularProgress size={24} /> } // Show loading message
+    ]);
+
     try {
       const res = await axios.post('http://localhost:5000/interact', payload);
       const botMessage = res.data.reply;
-  
+
       // Update the latest message with the bot's response
-      setMessages(prevMessages => [
-        ...prevMessages,
-        { user: step === 0 ? "" : userInput || "", bot: botMessage }
-      ]);
+      setMessages(prevMessages => {
+        const updatedMessages = prevMessages.slice(0, -1); // Remove loading message
+        return [
+          ...updatedMessages,
+          { user: step === 0 ? "" : userInput || "", bot: botMessage }
+        ];
+      });
 
       setUserInput("");
     } catch (error) {
