@@ -21,10 +21,9 @@ function TextLLM() {
     reason: "",
     confidence: ""
   });
-  // Create a ref for the messages container
   const messagesEndRef = useRef(null);
-  // Allow navigation back to home
   const navigate = useNavigate();
+  const [surveyCompleted, setSurveyCompleted] = useState(false);
 
   useEffect(() => {
     axios.get('http://localhost:5000/assign')
@@ -99,6 +98,7 @@ function TextLLM() {
           ...prevMessages,
           { user: "", bot: finalMessage }
         ]);
+        setSurveyCompleted(true); // Mark the survey as completed
       }
     }
   };  
@@ -135,19 +135,47 @@ function TextLLM() {
     }
   };  
 
+  // Export function to save messages as CSV
+  const handleExportMessages = () => {
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + messages.map(msg => {
+        const userPart = msg.user ? `User: ${msg.user}` : '';
+        const botPart = msg.bot ? `Bot: ${msg.bot}` : '';
+        return [userPart, botPart].filter(Boolean).join(',');
+      }).join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const a = document.createElement('a');
+    a.setAttribute('href', encodedUri);
+    a.setAttribute('download', 'llm_messages.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
-    <div className="App min-h-screen bg-gray-100 flex items-center justify-center h-screen overflow-hidden">
-      {/* Back to Home Button */}
+    <div className="App min-h-screen bg-gray-100 flex items-center justify-center h-screen overflow-hidden relative">
       <Box className="absolute top-4 left-4">
         <Button
           variant="text"
           color="primary"
-          onClick={() => navigate("/")} // Navigate back to home
+          onClick={() => navigate("/")}
           startIcon={<ArrowBackIcon />}
         >
           Back to Home
         </Button>
       </Box>
+      {surveyCompleted && (
+        <Box className="absolute top-4 right-4">
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleExportMessages}
+          >
+            Export Messages
+          </Button>
+        </Box>
+      )}
       <Paper elevation={3} className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col">
         <Typography variant="h4" className="text-center mb-4">
           LLM Study: {group ? "Text Interaction" : "Loading..."}
@@ -164,7 +192,6 @@ function TextLLM() {
                       <Typography variant="body2">{msg.user}</Typography>
                     </Box>
                   )}
-
                   {/* LLM message all the way to the left */}
                   {msg.bot && (
                     <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
@@ -173,7 +200,7 @@ function TextLLM() {
                   )}
                 </Box>
               ))}
-              {/* This div will serve as the anchor for scrolling */}
+              {/* This div serves as the anchor for scrolling */}
               <div ref={messagesEndRef} />
             </Box>
             <Box mb={4} display="flex" alignItems="center">
@@ -189,7 +216,7 @@ function TextLLM() {
                     handleNextStep();
                   }
                 }}
-                sx={{ flexGrow: 1, mr: 1 }} // Make the TextField grow and add margin to the right
+                sx={{ flexGrow: 1, mr: 1 }} 
               />
               <Button 
                 variant="contained" 
