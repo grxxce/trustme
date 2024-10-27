@@ -14,6 +14,7 @@ function TextLLM() {
   ]);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [userInput, setUserInput] = useState("");
+  const [latestUserInput, setLatestUserInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [initialized, setInitialized] = useState(false);
   const [context, setContext] = useState({
@@ -25,6 +26,7 @@ function TextLLM() {
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   const [surveyCompleted, setSurveyCompleted] = useState(false);
+  const [inConversation, setInConversation] = useState(false); // State to track Q&A conversation status
 
   useEffect(() => {
     axios.get('http://localhost:5000/assign')
@@ -48,6 +50,7 @@ function TextLLM() {
       if (initialized) {
         await handleInteract(); // Wait for handleInteract to complete
         if (step === 3) {
+          setLatestUserInput(userInput);
           setStep(3.5); // Move to step 3.5 after step 3, chance for clarifying questions
         }
       }
@@ -55,6 +58,18 @@ function TextLLM() {
 
     interactAndUpdateStep(); // Call the async function
   }, [step]);
+
+  // Effect to handle interaction during clarifying questions conversation
+  useEffect(() => {
+    const interactAndUpdate = async () => {
+      if (initialized && inConversation) {
+        await handleInteract(); // Wait for handleInteract to complete
+        setInConversation(false);
+      }
+    };
+
+    interactAndUpdate(); // Call the async function
+  }, [inConversation]);
 
   // Effect to scroll to the bottom whenever messages change
   useEffect(() => {
@@ -86,11 +101,11 @@ function TextLLM() {
       { user: userInput, bot: "" } // Bot response will be filled later
     ]);
 
-    setUserInput(""); // Clear the input after user submits
+    setLatestUserInput(userInput); // Save input for use in LLM
+    setUserInput(""); // Clear the input field after user submits
 
     if (step === 3.5) {
-      // TODO: this is hacky, need to update to not directly call handleInteract here
-      handleInteract();
+      setInConversation(true);
     } else if (step < 6) {
       setStep(step + 1);
     } else {
@@ -117,7 +132,7 @@ function TextLLM() {
     const payload = {
       question: currentQuestion,
       step: step,
-      user_input: userInput,
+      user_input: latestUserInput,
       context: context // Pass the context in the payload
     };
 

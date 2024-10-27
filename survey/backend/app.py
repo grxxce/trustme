@@ -74,7 +74,7 @@ def interact_with_llm(question, step, user_input, context=None):
         completion = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant providing detailed clarification."},
+                {"role": "system", "content": "You are a helpful assistant providing detailed clarification. Provide all response in plain text. No markdown language."},
                 {"role": "user", "content": prompt}
             ]
         )
