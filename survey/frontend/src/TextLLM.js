@@ -89,7 +89,7 @@ function TextLLM() {
     setUserInput(""); // Clear the input after user submits
 
     if (step === 3.5) {
-      // TODO: this is hacky, need to update to not direclty call handleInteract here
+      // TODO: this is hacky, need to update to not directly call handleInteract here
       handleInteract();
     } else if (step < 6) {
       setStep(step + 1);
@@ -136,11 +136,9 @@ function TextLLM() {
         const updatedMessages = prevMessages.slice(0, -1); // Remove loading message
         return [
           ...updatedMessages,
-          { user: step === 0 || step == 3.5 ? "" : userInput || "", bot: botMessage }
+          { user: "", bot: botMessage }
         ];
       });
-
-      setUserInput("");
 
       // Check if the response indicates readiness to proceed
       if (step === 3.5 && isReadyToMoveOn) {
