@@ -1,6 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { Button, TextField, Typography, Paper, Box, CircularProgress } from '@mui/material';
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import {
+  Button,
+  TextField,
+  Typography,
+  Paper,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 
@@ -10,7 +17,7 @@ function TextLLM() {
   const [questions, setQuestions] = useState([
     "If you flipped a coin, would you want heads or tails?",
     "If you were playing a game, would you pick the circle or the square piece?",
-    "A close friend asks for your opinion on their recent change in appearance, but you don't think it's good. Would you be fully honest or lie to protect their feelings?"
+    "A close friend asks for your opinion on their recent change in appearance, but you don't think it's good. Would you be fully honest or lie to protect their feelings?",
   ]);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [userInput, setUserInput] = useState("");
@@ -20,7 +27,7 @@ function TextLLM() {
   const [context, setContext] = useState({
     choice: "",
     reason: "",
-    confidence: ""
+    confidence: "",
   });
   const [error, setError] = useState(false); // Error state for TextField
   const messagesEndRef = useRef(null);
@@ -29,12 +36,15 @@ function TextLLM() {
   const [inConversation, setInConversation] = useState(false); // State to track Q&A conversation status
 
   useEffect(() => {
-    axios.get('http://localhost:5000/assign')
-      .then(res => {
+    axios
+      .get("http://localhost:5000/assign")
+      .then((res) => {
         setGroup(res.data.group);
         setCurrentQuestion(questions[0]);
       })
-      .catch(error => console.error('Error fetching group assignment:', error));
+      .catch((error) =>
+        console.error("Error fetching group assignment:", error)
+      );
   }, [questions]);
 
   useEffect(() => {
@@ -74,7 +84,7 @@ function TextLLM() {
   // Effect to scroll to the bottom whenever messages change
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
@@ -96,9 +106,9 @@ function TextLLM() {
     }
 
     // Immediately display the user's message
-    setMessages(prevMessages => [
+    setMessages((prevMessages) => [
       ...prevMessages,
-      { user: userInput, bot: "" } // Bot response will be filled later
+      { user: userInput, bot: "" }, // Bot response will be filled later
     ]);
 
     setLatestUserInput(userInput); // Save input for use in LLM
@@ -119,40 +129,37 @@ function TextLLM() {
         setStep(0); // Reset to the first step
       } else {
         const finalMessage = "Thank you for participating!";
-        setMessages(prevMessages => [
+        setMessages((prevMessages) => [
           ...prevMessages,
-          { user: "", bot: finalMessage }
+          { user: "", bot: finalMessage },
         ]);
         setSurveyCompleted(true); // Mark the survey as completed
       }
     }
-  };  
+  };
 
   const handleInteract = async () => {
     const payload = {
       question: currentQuestion,
       step: step,
       user_input: latestUserInput,
-      context: context // Pass the context in the payload
+      context: context, // Pass the context in the payload
     };
 
-    setMessages(prevMessages => [
+    setMessages((prevMessages) => [
       ...prevMessages,
-      { user: "", bot: <CircularProgress size={24} /> } // Show loading message
+      { user: "", bot: <CircularProgress size={24} /> }, // Show loading message
     ]);
 
     try {
-      const res = await axios.post('http://localhost:5000/interact', payload);
+      const res = await axios.post("http://localhost:5000/interact", payload);
       const botMessage = res.data.reply;
       const isReadyToMoveOn = botMessage.includes("Let's move on");
-      
+
       // Update the latest message with the bot's response
-      setMessages(prevMessages => {
+      setMessages((prevMessages) => {
         const updatedMessages = prevMessages.slice(0, -1); // Remove loading message
-        return [
-          ...updatedMessages,
-          { user: "", bot: botMessage }
-        ];
+        return [...updatedMessages, { user: "", bot: botMessage }];
       });
 
       // Check if the response indicates readiness to proceed
@@ -160,23 +167,26 @@ function TextLLM() {
         setStep(4);
       }
     } catch (error) {
-      console.error('Error interacting with LLM:', error);
+      console.error("Error interacting with LLM:", error);
     }
-  };  
+  };
 
   // Export function to save messages as CSV
   const handleExportMessages = () => {
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + messages.map(msg => {
-        const userPart = msg.user ? `User: ${msg.user}` : '';
-        const botPart = msg.bot ? `Bot: ${msg.bot}` : '';
-        return [userPart, botPart].filter(Boolean).join(',');
-      }).join('\n');
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      messages
+        .map((msg) => {
+          const userPart = msg.user ? `User: ${msg.user}` : "";
+          const botPart = msg.bot ? `Bot: ${msg.bot}` : "";
+          return [userPart, botPart].filter(Boolean).join(",");
+        })
+        .join("\n");
 
     const encodedUri = encodeURI(csvContent);
-    const a = document.createElement('a');
-    a.setAttribute('href', encodedUri);
-    a.setAttribute('download', 'llm_messages.csv');
+    const a = document.createElement("a");
+    a.setAttribute("href", encodedUri);
+    a.setAttribute("download", "llm_messages.csv");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -196,16 +206,19 @@ function TextLLM() {
       </Box>
       {surveyCompleted && (
         <Box className="absolute top-4 right-4">
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleExportMessages}
           >
             Export Messages
           </Button>
         </Box>
       )}
-      <Paper elevation={3} className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col">
+      <Paper
+        elevation={3}
+        className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col"
+      >
         <Typography variant="h4" className="text-center mb-4">
           LLM Study: {group ? "Text Interaction" : "Loading..."}
         </Typography>
@@ -233,25 +246,25 @@ function TextLLM() {
               <div ref={messagesEndRef} />
             </Box>
             <Box mb={4} display="flex" alignItems="center">
-              <TextField 
-                label="Your response" 
-                variant="outlined" 
-                margin="normal" 
+              <TextField
+                label="Your response"
+                variant="outlined"
+                margin="normal"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 error={error}
                 helperText={error ? "Response can't be empty" : ""}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                     handleNextStep();
                   }
                 }}
-                sx={{ flexGrow: 1, mr: 1 }} 
+                sx={{ flexGrow: 1, mr: 1 }}
               />
-              <Button 
-                variant="contained" 
-                color="primary" 
+              <Button
+                variant="contained"
+                color="primary"
                 onClick={handleNextStep}
               >
                 Submit
