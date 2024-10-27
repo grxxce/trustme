@@ -22,39 +22,82 @@ def interact():
     question = data.get('question')
     step = data.get('step')
     user_input = data.get('user_input')
-    context = data.get('context', {})  # Get context for steps like 3
+    context = data.get('context', {})
 
-    # Call the GPT-3.5 model based on the step of the conversation
+    # Call the LLM function with full context for clarification questions
     response = interact_with_llm(question, step, user_input, context)
     return jsonify({'reply': response})
 
 def interact_with_llm(question, step, user_input, context=None):
-    # Define the conversational flow
+    # Step 3 context
+    user_choice = context.get('choice')
+    user_reason = context.get('reason')
+    user_confidence = context.get('confidence')
+    llm_persuasion_reason = context.get('llm_persuasion_reason')
+    clarifications = context.get('clarifications', [])  # List of clarification Q&A
+
     if step == 0:
         prompt = f"Ask the user this exact question: {question}."
     elif step == 1:
-        prompt = f"Ask the user exactly this: Why do you choose that?."
+        prompt = f"Ask the user exactly this: Why do you choose that?"
     elif step == 2:
         prompt = f"Ask the user exactly this: How confident are you in your choice on a scale from 1 to 5?"
     elif step == 3:
-        user_choice = context.get('choice')
-        user_reason = context.get('reason')
-        user_confidence = context.get('confidence')
         prompt = f"You asked the user: '{question}'. The user chose: '{user_choice}'.\n" \
                  f"Their reason: '{user_reason}'.\n" \
                  f"Confidence in the choice: {user_confidence}/5.\n" \
-                 f"Give the user a reason to change their mind and pick the opposite choice."
+                 f"Concisely attempt to change the user's mind to pick the opposite choice."
+        # Store the LLM's persuasion reason in context for future steps
+        llm_persuasion_reason = call_llm_for_persuasion_reason(prompt)
+        context['llm_persuasion_reason'] = llm_persuasion_reason  # Update context
+        return llm_persuasion_reason
+    elif step == 3.5:
+        # Prepare prompt with full conversation history for answering clarifications
+        clarification_history = "\n".join(
+            f"Q: {q['user']}\nA: {q['bot']}" for q in clarifications
+        )
+        # If input empty then this is right after step 3, no questions yet, ask first
+        if user_input == "":
+            prompt = f"Ask the user exactly this: Would you like to ask any clarifying question, or are you ready to move on?"
+        else:
+            prompt = (
+                f"The original question was: '{question}'.\n"
+                f"The user initially chose: '{user_choice}' and gave the reason: '{user_reason}'.\n"
+                f"Confidence in the choice was rated {user_confidence}/5.\n"
+                f"The LLM suggested the user reconsider and provided the reason: '{llm_persuasion_reason}'.\n\n"
+                f"{clarification_history}\n\n"
+                f"The user now asks for further clarification: '{user_input}'.\n"
+                "Answer the question concisely and conclude with 'Would you like to ask any clarifying question, or are you ready to move on?'"
+            )
+
+        # Call LLM to answer the clarification
+        completion = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant providing detailed clarification."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        clarification_answer = completion.choices[0].message.content.strip()
+        
+        # Append the clarification Q&A to context
+        clarifications.append({'user': user_input, 'bot': clarification_answer})
+        context['clarifications'] = clarifications  # Update context
+
+        # Check readiness with helper function (true/false based on readiness)
+        if check_readiness_with_llm(user_input):
+            return "Great! Let's move on to the next part."
+    
+        return clarification_answer
     elif step == 4:
-        # Ask for the updated choice after persuasion
         prompt = f"Ask the user exactly this: With that said, please answer the question again: '{question}'."
     elif step == 5:
-        # Ask for the reason for the updated choice
-        prompt = f"Ask the user exactly this: Why do you choose that?."
+        prompt = f"Ask the user exactly this: Why do you choose that?"
     elif step == 6:
-        # Ask for their confidence in the updated choice
         prompt = f"Ask the user exactly this: How confident are you in your choice on a scale from 1 to 5?"
 
-    # Call OpenAI's Chat Completion API
+    # Default interaction
     completion = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -64,6 +107,29 @@ def interact_with_llm(question, step, user_input, context=None):
     )
 
     return completion.choices[0].message.content.strip()
+
+def call_llm_for_persuasion_reason(prompt):
+    completion = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You provide persuasive reasons for choices."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return completion.choices[0].message.content.strip()
+
+def check_readiness_with_llm(user_input):
+    prompt = f"Does the following response indicate the user is ready to move on? Reply with only 'True' or 'False'.\nResponse: '{user_input}'"
+
+    completion = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You determine if the user is ready to proceed."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    reply = completion.choices[0].message.content.strip()
+    return reply.lower() == 'true'
 
 if __name__ == '__main__':
     app.run(debug=True)

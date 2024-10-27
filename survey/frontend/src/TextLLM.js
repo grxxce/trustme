@@ -48,7 +48,7 @@ function TextLLM() {
       if (initialized) {
         await handleInteract(); // Wait for handleInteract to complete
         if (step === 3) {
-          setStep(step + 1); // Move to step 4 after step 3
+          setStep(3.5); // Move to step 3.5 after step 3, chance for clarifying questions
         }
       }
     };
@@ -88,8 +88,10 @@ function TextLLM() {
 
     setUserInput(""); // Clear the input after user submits
 
-    if (step < 6) {
-      // Prepare for the next step
+    if (step === 3.5) {
+      // TODO: this is hacky, need to update to not direclty call handleInteract here
+      handleInteract();
+    } else if (step < 6) {
       setStep(step + 1);
     } else {
       // Final logic when all steps are done
@@ -127,17 +129,23 @@ function TextLLM() {
     try {
       const res = await axios.post('http://localhost:5000/interact', payload);
       const botMessage = res.data.reply;
-
+      const isReadyToMoveOn = botMessage.includes("Let's move on");
+      
       // Update the latest message with the bot's response
       setMessages(prevMessages => {
         const updatedMessages = prevMessages.slice(0, -1); // Remove loading message
         return [
           ...updatedMessages,
-          { user: step === 0 ? "" : userInput || "", bot: botMessage }
+          { user: step === 0 || step == 3.5 ? "" : userInput || "", bot: botMessage }
         ];
       });
 
       setUserInput("");
+
+      // Check if the response indicates readiness to proceed
+      if (step === 3.5 && isReadyToMoveOn) {
+        setStep(4);
+      }
     } catch (error) {
       console.error('Error interacting with LLM:', error);
     }
@@ -194,16 +202,16 @@ function TextLLM() {
             <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
               {messages.map((msg, index) => (
                 <Box key={index} mb={2} className="flex justify-between">
-                  {/* User message all the way to the right */}
-                  {msg.user && (
-                    <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
-                      <Typography variant="body2">{msg.user}</Typography>
-                    </Box>
-                  )}
                   {/* LLM message all the way to the left */}
                   {msg.bot && (
                     <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
                       <Typography variant="body2">{msg.bot}</Typography>
+                    </Box>
+                  )}
+                  {/* User message all the way to the right */}
+                  {msg.user && (
+                    <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
+                      <Typography variant="body2">{msg.user}</Typography>
                     </Box>
                   )}
                 </Box>
