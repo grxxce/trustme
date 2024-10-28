@@ -75,7 +75,11 @@ function TextLLM() {
   // Effect to handle interaction during clarifying questions conversation
   useEffect(() => {
     const interactAndUpdate = async () => {
-      if (initialized && inConversation) {
+      // RHS of or conditional is to trigger "would you like to move on" as a separate message
+      if (
+        (initialized && inConversation) ||
+        (step === 3.5 && latestUserInput === "")
+      ) {
         await handleInteract(); // Wait for handleInteract to complete
         setInConversation(false);
       }
@@ -99,7 +103,7 @@ function TextLLM() {
     }
   }, [saveHistory]);
 
-  // If next question button clicked, hide and save history (will show next question) 
+  // If next question button clicked, hide and save history (will show next question)
   useEffect(() => {
     if (nextQuestionButton === 2) {
       setSaveHistory(true);
@@ -153,7 +157,7 @@ function TextLLM() {
       { separator: `Question: ${currentQuestion}` },
       ...messages,
     ]);
-    
+
     if (questions.length > 1) {
       setMessages([]);
       const remainingQuestions = questions.slice(1);
@@ -186,6 +190,7 @@ function TextLLM() {
       const res = await axios.post("http://localhost:5000/interact", payload);
       const botMessage = res.data.reply;
       const isReadyToMoveOn = botMessage.includes("Let's move on");
+      const askingToMoveOn = botMessage.includes("are you ready");
 
       // Update the latest message with the bot's response
       setMessages((prevMessages) => {
@@ -194,8 +199,14 @@ function TextLLM() {
       });
 
       // Check if the response indicates readiness to proceed
-      if (step === 3.5 && isReadyToMoveOn) {
-        setStep(4);
+      if (step === 3.5) {
+        if (isReadyToMoveOn) {
+          setStep(4);
+        } else if (!askingToMoveOn) {
+          // This helps trigger llm to ask if user is ready for next question or as a separate message
+          setLatestUserInput("");
+          setInConversation(true);
+        }
       }
     } catch (error) {
       console.error("Error interacting with LLM:", error);
@@ -277,7 +288,7 @@ function TextLLM() {
               {/* This div serves as the anchor for scrolling */}
               <div ref={messagesEndRef} />
             </Box>
-            {nextQuestionButton === 0 && !surveyCompleted &&
+            {nextQuestionButton === 0 && !surveyCompleted && (
               <Box display="flex" alignItems="center">
                 <TextField
                   label="Your response"
@@ -294,17 +305,17 @@ function TextLLM() {
                     }
                   }}
                   sx={{ flexGrow: 1, mr: 1 }}
-                  />
+                />
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={handleNextStep}
-                  >
+                >
                   Submit
                 </Button>
               </Box>
-            }
-            {nextQuestionButton === 1 &&
+            )}
+            {nextQuestionButton === 1 && (
               <Box className="mt-4" display="flex">
                 <Button
                   variant="contained"
@@ -315,7 +326,7 @@ function TextLLM() {
                   Move to Next Question
                 </Button>
               </Box>
-            }
+            )}
           </>
         )}
       </Paper>
