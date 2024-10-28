@@ -36,6 +36,7 @@ function TextLLM() {
   const [surveyCompleted, setSurveyCompleted] = useState(false);
   const [inConversation, setInConversation] = useState(false); // State to track Q&A conversation status
   const [saveHistory, setSaveHistory] = useState(false);
+  const [nextQuestionButton, setNextQuestionButton] = useState(0); // State to show or not show "next question" button, (0=hidden, 1=showing, 2=clicked)
 
   useEffect(() => {
     axios
@@ -98,6 +99,14 @@ function TextLLM() {
     }
   }, [saveHistory]);
 
+  // If next question button clicked, hide and save history (will show next question) 
+  useEffect(() => {
+    if (nextQuestionButton === 2) {
+      setSaveHistory(true);
+      setNextQuestionButton(0);
+    }
+  }, [nextQuestionButton]);
+
   const handleNextStep = () => {
     if (!userInput.trim()) {
       setError(true); // Set error state if input is empty
@@ -129,7 +138,11 @@ function TextLLM() {
     } else if (step < 6) {
       setStep(step + 1);
     } else {
-      setSaveHistory(true);
+      if (questions.length > 1) {
+        setNextQuestionButton(1);
+      } else {
+        setSaveHistory(true);
+      }
     }
   };
 
@@ -264,31 +277,45 @@ function TextLLM() {
               {/* This div serves as the anchor for scrolling */}
               <div ref={messagesEndRef} />
             </Box>
-            <Box mb={4} display="flex" alignItems="center">
-              <TextField
-                label="Your response"
-                variant="outlined"
-                margin="normal"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                error={error}
-                helperText={error ? "Response can't be empty" : ""}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleNextStep();
-                  }
-                }}
-                sx={{ flexGrow: 1, mr: 1 }}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleNextStep}
-              >
-                Submit
-              </Button>
-            </Box>
+            {nextQuestionButton === 0 && !surveyCompleted &&
+              <Box display="flex" alignItems="center">
+                <TextField
+                  label="Your response"
+                  variant="outlined"
+                  margin="normal"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  error={error}
+                  helperText={error ? "Response can't be empty" : ""}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleNextStep();
+                    }
+                  }}
+                  sx={{ flexGrow: 1, mr: 1 }}
+                  />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleNextStep}
+                  >
+                  Submit
+                </Button>
+              </Box>
+            }
+            {nextQuestionButton === 1 &&
+              <Box className="mt-4" display="flex">
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => setNextQuestionButton(2)}
+                  className="flex-grow"
+                >
+                  Move to Next Question
+                </Button>
+              </Box>
+            }
           </>
         )}
       </Paper>
