@@ -23,6 +23,7 @@ function TextLLM() {
   const [userInput, setUserInput] = useState("");
   const [latestUserInput, setLatestUserInput] = useState("");
   const [messages, setMessages] = useState([]);
+  const [fullHistory, setFullHistory] = useState([]);
   const [initialized, setInitialized] = useState(false);
   const [context, setContext] = useState({
     choice: "",
@@ -34,6 +35,7 @@ function TextLLM() {
   const navigate = useNavigate();
   const [surveyCompleted, setSurveyCompleted] = useState(false);
   const [inConversation, setInConversation] = useState(false); // State to track Q&A conversation status
+  const [saveHistory, setSaveHistory] = useState(false);
 
   useEffect(() => {
     axios
@@ -88,6 +90,14 @@ function TextLLM() {
     }
   }, [messages]);
 
+  // Save full history when moving to a new question
+  useEffect(() => {
+    if (saveHistory) {
+      saveCurrentQuestionHistory();
+      setSaveHistory(false);
+    }
+  }, [saveHistory]);
+
   const handleNextStep = () => {
     if (!userInput.trim()) {
       setError(true); // Set error state if input is empty
@@ -119,22 +129,30 @@ function TextLLM() {
     } else if (step < 6) {
       setStep(step + 1);
     } else {
-      // Final logic when all steps are done
-      if (questions.length > 1) {
-        // Update the questions state
-        const nextQuestions = [...questions];
-        nextQuestions.shift(); // Remove the first question
-        setQuestions(nextQuestions);
-        setCurrentQuestion(nextQuestions[0]); // Update the current question
-        setStep(0); // Reset to the first step
-      } else {
-        const finalMessage = "Thank you for participating!";
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { user: "", bot: finalMessage },
-        ]);
-        setSurveyCompleted(true); // Mark the survey as completed
-      }
+      setSaveHistory(true);
+    }
+  };
+
+  // Final logic when all steps in a question are done
+  const saveCurrentQuestionHistory = () => {
+    setFullHistory((prevHistory) => [
+      ...prevHistory,
+      { separator: `Question: ${currentQuestion}` },
+      ...messages,
+    ]);
+    
+    if (questions.length > 1) {
+      setMessages([]);
+      const remainingQuestions = questions.slice(1);
+      setQuestions(remainingQuestions);
+      setCurrentQuestion(remainingQuestions[0]);
+      setStep(0);
+    } else {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { user: "", bot: "Thank you for participating!" },
+      ]);
+      setSurveyCompleted(true);
     }
   };
 
@@ -175,8 +193,9 @@ function TextLLM() {
   const handleExportMessages = () => {
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      messages
+      fullHistory
         .map((msg) => {
+          if (msg.separator) return msg.separator;
           const userPart = msg.user ? `User: ${msg.user}` : "";
           const botPart = msg.bot ? `Bot: ${msg.bot}` : "";
           return [userPart, botPart].filter(Boolean).join(",");
