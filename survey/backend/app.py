@@ -3,14 +3,16 @@ from flask_cors import CORS
 import openai
 import os
 from dotenv import load_dotenv
+# Audio
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+# cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
 
 @app.route("/assign", methods=["GET"])
 def assign_group():
@@ -150,6 +152,20 @@ def check_readiness_with_llm(user_input):
     reply = completion.choices[0].message.content.strip()
     return reply.lower() == "true"
 
+# Audio
+@app.route('/message', methods=['POST'])
+def message():
+    data = request.json
+    user_message = data.get('message')
+    
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": user_message}]
+    )
+    
+    bot_reply = response.choices[0].message['content']
+    return jsonify({'reply': bot_reply})
+# End Audio
 
 if __name__ == "__main__":
     app.run(debug=True)
