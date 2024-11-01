@@ -10,8 +10,10 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
+import PreSurveyForm from "./PreSurveyForm";
 
 function TextLLM() {
+  const [preSurveyData, setPreSurveyData] = useState(null);
   const [group, setGroup] = useState(null);
   const [step, setStep] = useState(0);
   const [questions, setQuestions] = useState([
@@ -217,14 +219,16 @@ function TextLLM() {
   const handleExportMessages = () => {
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      fullHistory
-        .map((msg) => {
+      [
+        `Field(s) of Study: ${preSurveyData.major}`,
+        `Familiarity with LLMs: ${preSurveyData.familiarity}`,
+        ...fullHistory.map((msg) => {
           if (msg.separator) return msg.separator;
           const userPart = msg.user ? `User: ${msg.user}` : "";
           const botPart = msg.bot ? `Bot: ${msg.bot}` : "";
           return [userPart, botPart].filter(Boolean).join(",");
-        })
-        .join("\n");
+        }),
+      ].join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const a = document.createElement("a");
@@ -258,78 +262,82 @@ function TextLLM() {
           </Button>
         </Box>
       )}
-      <Paper
-        elevation={3}
-        className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col"
-      >
-        <Typography variant="h4" className="text-center mb-4">
-          LLM Study: {group ? "Text Interaction" : "Loading..."}
-        </Typography>
+      {!preSurveyData ? (
+        <PreSurveyForm onComplete={(data) => setPreSurveyData(data)} />
+      ) : (
+        <Paper
+          elevation={3}
+          className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col"
+        >
+          <Typography variant="h4" className="text-center mb-4">
+            LLM Study: {group ? "Text Interaction" : "Loading..."}
+          </Typography>
 
-        {group && (
-          <>
-            <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
-              {messages.map((msg, index) => (
-                <Box key={index} mb={2} className="flex justify-between">
-                  {/* LLM message all the way to the left */}
-                  {msg.bot && (
-                    <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
-                      <Typography variant="body2">{msg.bot}</Typography>
-                    </Box>
-                  )}
-                  {/* User message all the way to the right */}
-                  {msg.user && (
-                    <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
-                      <Typography variant="body2">{msg.user}</Typography>
-                    </Box>
-                  )}
+          {group && (
+            <>
+              <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
+                {messages.map((msg, index) => (
+                  <Box key={index} mb={2} className="flex justify-between">
+                    {/* LLM message all the way to the left */}
+                    {msg.bot && (
+                      <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
+                        <Typography variant="body2">{msg.bot}</Typography>
+                      </Box>
+                    )}
+                    {/* User message all the way to the right */}
+                    {msg.user && (
+                      <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
+                        <Typography variant="body2">{msg.user}</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                ))}
+                {/* This div serves as the anchor for scrolling */}
+                <div ref={messagesEndRef} />
+              </Box>
+              {nextQuestionButton === 0 && !surveyCompleted && (
+                <Box display="flex" alignItems="center">
+                  <TextField
+                    label="Your response"
+                    variant="outlined"
+                    margin="normal"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    error={error}
+                    helperText={error ? "Response can't be empty" : ""}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleNextStep();
+                      }
+                    }}
+                    sx={{ flexGrow: 1, mr: 1 }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleNextStep}
+                  >
+                    Submit
+                  </Button>
                 </Box>
-              ))}
-              {/* This div serves as the anchor for scrolling */}
-              <div ref={messagesEndRef} />
-            </Box>
-            {nextQuestionButton === 0 && !surveyCompleted && (
-              <Box display="flex" alignItems="center">
-                <TextField
-                  label="Your response"
-                  variant="outlined"
-                  margin="normal"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  error={error}
-                  helperText={error ? "Response can't be empty" : ""}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleNextStep();
-                    }
-                  }}
-                  sx={{ flexGrow: 1, mr: 1 }}
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleNextStep}
-                >
-                  Submit
-                </Button>
-              </Box>
-            )}
-            {nextQuestionButton === 1 && (
-              <Box className="mt-4" display="flex">
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={() => setNextQuestionButton(2)}
-                  className="flex-grow"
-                >
-                  Move to Next Question
-                </Button>
-              </Box>
-            )}
-          </>
-        )}
-      </Paper>
+              )}
+              {nextQuestionButton === 1 && (
+                <Box className="mt-4" display="flex">
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => setNextQuestionButton(2)}
+                    className="flex-grow"
+                  >
+                    Move to Next Question
+                  </Button>
+                </Box>
+              )}
+            </>
+          )}
+        </Paper>
+      )}
     </div>
   );
 }
