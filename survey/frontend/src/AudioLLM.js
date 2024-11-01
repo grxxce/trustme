@@ -101,6 +101,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
+
 const AudioLLM = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -114,7 +115,8 @@ const AudioLLM = () => {
 
     try {
       alert("before response")
-      const response = await axios.post('http://localhost:5000/message', { message });
+      const response = await axios.post('http://localhost:5001/message', { message }, 
+        { headers: { "Content-Type": "application/json" } });
       alert("after response", response)
       const botMessage = { sender: 'bot', text: response.data.reply };
       setMessages((prev) => [...prev, botMessage]);
