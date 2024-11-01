@@ -217,9 +217,12 @@ function TextLLM() {
 
   // Export function to save messages as CSV
   const handleExportMessages = () => {
+    const currentTime = new Date().toLocaleString();
+
     const csvContent =
       "data:text/csv;charset=utf-8," +
       [
+        `Exported at: ${currentTime}`,
         `Field(s) of Study: ${preSurveyData.major}`,
         `Familiarity with LLMs: ${preSurveyData.familiarity}`,
         ...fullHistory.map((msg) => {
