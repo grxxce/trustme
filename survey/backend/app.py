@@ -63,7 +63,7 @@ def interact_with_llm(question, step, user_input, context=None):
         )
         # If input empty then this is right after step 3 or the second part of a response for 3.5
         if user_input == "":
-            prompt = f"Ask the user exactly this: Would you like to ask any clarifying question, or are you ready to move on?"
+            prompt = f"Ask the user exactly this: What clarifying questions do you have, or are you ready to move on?"
         else:
             prompt = (
                 f"The original question was: '{question}'.\n"
