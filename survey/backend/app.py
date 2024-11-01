@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import openai
 import os
 from dotenv import load_dotenv
@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
 # cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+openai.api_key = os.getenv("REACT_APP_OPENAI_API_KEY")
 
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/assign", methods=["GET"])
 def assign_group():
@@ -153,8 +153,18 @@ def check_readiness_with_llm(user_input):
     return reply.lower() == "true"
 
 # Audio
-@app.route('/message', methods=['POST'])
+@app.route('/message', methods=['OPTIONS', 'POST'])
 def message():
+    print("going to route")
+    if request.method == 'OPTIONS':
+        # Respond to the OPTIONS request with CORS headers
+        response = jsonify({'status': 'ok'})
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        return response, 200
+    
+    print("in here!")
     data = request.json
     user_message = data.get('message')
     
@@ -168,4 +178,4 @@ def message():
 # End Audio
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="localhost", port=5001)
