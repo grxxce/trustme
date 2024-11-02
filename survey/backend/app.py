@@ -151,5 +151,23 @@ def check_readiness_with_llm(user_input):
     return reply.lower() == "true"
 
 
+# Audio
+@app.route('/message', methods=['POST'])
+def message():
+    data = request.json
+    user_message = data.get('message')
+    
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a friendly assistant."},
+            {"role": "user", "content": user_message}
+        ]
+    )
+
+    bot_reply = response.choices[0].message.content
+    return jsonify({'reply': bot_reply})
+# End Audio
+
 if __name__ == "__main__":
     app.run(debug=True)
