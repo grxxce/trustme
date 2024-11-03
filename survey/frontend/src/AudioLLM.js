@@ -22,7 +22,7 @@ const AudioLLM = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:5000/message", {
+      const response = await axios.post("http://localhost:5001/message", {
         message: message,
       });
       const botMessage = { sender: "bot", text: response.data.reply };
