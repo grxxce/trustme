@@ -42,7 +42,7 @@ function TextLLM() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/assign")
+      .get("http://localhost:3000/assign")
       .then((res) => {
         setGroup(res.data.group);
         setCurrentQuestion(questions[0]);
@@ -189,7 +189,7 @@ function TextLLM() {
     ]);
 
     try {
-      const res = await axios.post("http://localhost:5000/interact", payload);
+      const res = await axios.post("http://localhost:3000/interact", payload);
       const botMessage = res.data.reply;
       const isReadyToMoveOn = botMessage.includes("Let's move on");
       const askingToMoveOn = botMessage.includes("are you ready");

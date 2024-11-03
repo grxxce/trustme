@@ -1,20 +1,60 @@
-import React, { useState, useEffect, useCallback } from "react";
+// A new attempt using sockets!!
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Button,
   Paper,
   Typography,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import MicIcon from "@mui/icons-material/Mic";
+import StopIcon from "@mui/icons-material/Stop";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:5001');
+
 const AudioLLM = () => {
+  const [input, setInput] = useState('');
+  const [audioSrc, setAudioSrc] = useState('');
+
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    socket.on('bot_response', (data) => {
+      setMessages(prev => [...prev, { text: data.text, isBot: true }]);
+    });
+
+    socket.on('audio_ready', (data) => {
+      if (audioRef.current) {
+        audioRef.current.src = data.audio_url;
+        audioRef.current.play();
+      }
+    });
+
+    return () => {
+      socket.off('bot_response');
+      socket.off('audio_ready');
+    };
+  }, []);
+
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   setMessages(prev => [...prev, { text: input, isBot: false }]);
+  //   socket.emit('message', input);
+  //   setInput('');
+  // };
+
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [speechRecognition, setSpeechRecognition] = useState(null);
+  const [isListening, setIsListening] = useState(false);
   const navigate = useNavigate();
+  const chatWindowRef = useRef(null);
 
   const handleUserMessage = useCallback(async (message) => {
     const userMessage = { sender: "user", text: message };
@@ -22,13 +62,31 @@ const AudioLLM = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:5000/message", {
-        message: message,
-      });
+      const response = await axios.post('http://localhost:5001/message', { message }, 
+        { headers: { "Content-Type": "application/json" } });
       const botMessage = { sender: "bot", text: response.data.reply };
       setMessages((prev) => [...prev, botMessage]);
+      
+      // if (response.ok) {
+      //   const blob = await response.blob();
+      //   const url = URL.createObjectURL(blob);
+      //   setAudioSrc(url);
+      // } else {
+      //     console.error('Failed to fetch audio');
+      // }
+
+      // Speak in the natural sounding voice!!
+      console.log(botMessage)
       speak(botMessage.text);
+      // Set audio source and play
+      // if (audioRef.current) {
+      //     audioRef.current.src = response.data.audio_url;
+      //     audioRef.current.play();
+      // }
     } catch (error) {
+      console.error("Error sending message:", error);
+      const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
@@ -40,29 +98,50 @@ const AudioLLM = () => {
         window.webkitSpeechRecognition)();
       recognition.lang = "en-US";
       recognition.interimResults = false;
+      recognition.continuous = true;
 
       recognition.onresult = async (event) => {
-        const userMessage = event.results[0][0].transcript;
+        const userMessage = event.results[event.results.length - 1][0].transcript;
         await handleUserMessage(userMessage);
+      };
+
+      recognition.onend = () => {
+        if (isListening) {
+          recognition.start();
+        }
       };
 
       setSpeechRecognition(recognition);
     }
-  }, [handleUserMessage]);
+  }, [handleUserMessage, isListening]);
 
+  useEffect(() => {
+    if (chatWindowRef.current) {
+      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Turns the text into speech.
   const speak = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
     window.speechSynthesis.speak(utterance);
   };
 
-  const startListening = () => {
+  const toggleListening = () => {
     if (speechRecognition) {
-      speechRecognition.start();
+      if (isListening) {
+        speechRecognition.stop();
+        setIsListening(false);
+      } else {
+        speechRecognition.start();
+        setIsListening(true);
+      }
     }
   };
 
   return (
     <div className="App min-h-screen bg-gray-100 flex items-center justify-center h-screen overflow-hidden relative">
+      {/* <audio ref={audioRef} style={{ display: 'none' }} /> */}
       <Box className="absolute top-4 left-4">
         <Button
           variant="text"
@@ -78,7 +157,11 @@ const AudioLLM = () => {
           LLM Study: Audio Interaction
         </Typography>
   
-        <Box className="overflow-y-auto border p-4 rounded-lg flex-1 mb-4" id="chat-window">
+        <Box 
+          ref={chatWindowRef}
+          className="overflow-y-auto border p-4 rounded-lg flex-1 mb-4" 
+          id="chat-window"
+        >
           {messages.map((msg, index) => (
             <Box
               key={index}
@@ -105,14 +188,14 @@ const AudioLLM = () => {
           )}
         </Box>
   
-        <Button
-          onClick={startListening}
-          variant="contained"
+        <IconButton
+          onClick={toggleListening}
           color="primary"
-          className="w-full py-2"
+          className="w-16 h-16 mx-auto"
+          sx={{ backgroundColor: isListening ? 'rgba(25, 118, 210, 0.1)' : 'transparent' }}
         >
-          Speak
-        </Button>
+          {isListening ? <StopIcon fontSize="large" /> : <MicIcon fontSize="large" />}
+        </IconButton>
       </Paper>
     </div>
   );  
