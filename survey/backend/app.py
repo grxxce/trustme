@@ -1,16 +1,14 @@
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, send_file
 from flask_cors import CORS, cross_origin
 import openai
 import os
 from dotenv import load_dotenv
 # Realtime API
 from flask_socketio import SocketIO, emit
-import asyncio
-import websockets
-import json
-
-
-import io
+# import asyncio
+# import websockets
+# import json
+# import io
 
 
 app = Flask(__name__)
@@ -167,7 +165,7 @@ def check_readiness_with_llm(user_input):
     return reply.lower() == "true"
 
 
-# Audio
+# Audio!!
 @app.route('/message', methods=['OPTIONS', 'POST'])
 def message():
     if request.method == 'OPTIONS':
@@ -209,108 +207,16 @@ def message():
     print(f"Audio saved to {output_path}")
     
     # Store the audio content in the global variable
-    audio_stream = io.BytesIO(audio_response.content)
-    # Stream the audio response
-    # return Response(io.BytesIO(audio_response.content), 
-    #                 mimetype='audio/mpeg',
-    #                 headers={'Content-Disposition': 'inline; filename=output_speech.mp3'})
+    # audio_stream = io.BytesIO(audio_response.content)
 
-    return jsonify({'reply': bot_reply, 'audio_url': '/audio'})
-  
-    # END REALISTIC VOICE
-    
+    return jsonify({'reply': bot_reply, 'audio_url': '/audio/output_speech.mp3'})
 
-# @app.route('/audio/<filename>')
-# def get_audio(filename):
-#     return send_file(f'audio/{filename}', mimetype='audio/mpeg')
-
-
-@app.route('/audio', methods=['OPTIONS', 'POST'])
-def serve_audio():
-    if request.method == 'OPTIONS':
-        # Respond to the OPTIONS request with CORS headers
-        response = jsonify({'status': 'ok'})
-        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
-        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-        return response, 200
-    global audio_stream
-    # Serve the audio file
-    return Response(audio_stream.getvalue(), mimetype="audio/mpeg")
-
-# This is new to the audio!
-@socketio.on('message')
-async def handle_message(user_message):
-    try:
-        async with websockets.connect(
-            OPENAI_REALTIME_URL,
-            extra_headers={
-                "Authorization": f"Bearer {OPENAI_API_KEY}",
-                "OpenAI-Beta": "realtime=v1",
-            }
-        ) as ws:
-            # Initialize the session
-            await ws.send(json.dumps({
-                "type": "session.update",
-                "session": {
-                    "instructions": "You are a friendly assistant.",
-                    "modalities": ["text"],
-                }
-            }))
-
-            # Send user message
-            await ws.send(json.dumps({
-                "type": "conversation.item.create",
-                "item": {
-                    "type": "message",
-                    "role": "user",
-                    "content": [{"type": "input_text", "text": user_message}]
-                }
-            }))
-
-            # Request response
-            await ws.send(json.dumps({"type": "response.create"}))
-
-            # # Process and emit responses
-            # async for message in ws:
-            #     response = json.loads(message)
-            #     if response['type'] == 'conversation.item.created' and response['item']['role'] == 'assistant':
-            #         for content in response['item']['content']:
-            #             if content['type'] == 'text':
-            #                 emit('bot_response', {'text': content['text']})
-            # Process and emit responses
-            async for message in ws:
-                response = json.loads(message)
-                if response['type'] == 'conversation.item.created' and response['item']['role'] == 'assistant':
-                    for content in response['item']['content']:
-                        if content['type'] == 'text':
-                            text_response = content['text']
-                            emit('bot_response', {'text': text_response})
-                            
-                            # Generate audio for the response
-                            audio_response = openai.audio.speech.create(
-                                model="tts-1",
-                                voice="alloy",
-                                input=text_response
-                            )
-                            
-                            # Store the audio content in the global variable
-                            global audio_stream
-                            audio_stream = io.BytesIO(audio_response.content)
-                            
-                            # Emit an event to notify that audio is ready
-                            emit('audio_ready', {'audio_url': '/audio'})
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        emit('error', {'message': 'An error occurred'})
-
-
-# End Audio
-
+@app.route('/audio/<filename>')
+def audio(filename):
+    return send_file(filename, mimetype='audio/mpeg')
 
 if __name__ == "__main__":
     app.run(debug=True, host="localhost", port=5001)
-    socketio.run(app, debug=True, host="localhost", port=5001)
+    # socketio.run(app, debug=True, host="localhost", port=5001)
 
 
