@@ -19,9 +19,12 @@ import io from 'socket.io-client';
 const socket = io('http://localhost:5001');
 
 const AudioLLM = () => {
-  const [input, setInput] = useState('');
-  const [audioSrc, setAudioSrc] = useState('');
-
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [speechRecognition, setSpeechRecognition] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+  const navigate = useNavigate();
+  const chatWindowRef = useRef(null);
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -42,20 +45,6 @@ const AudioLLM = () => {
     };
   }, []);
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   setMessages(prev => [...prev, { text: input, isBot: false }]);
-  //   socket.emit('message', input);
-  //   setInput('');
-  // };
-
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [speechRecognition, setSpeechRecognition] = useState(null);
-  const [isListening, setIsListening] = useState(false);
-  const navigate = useNavigate();
-  const chatWindowRef = useRef(null);
-
   const handleUserMessage = useCallback(async (message) => {
     const userMessage = { sender: "user", text: message };
     setMessages((prev) => [...prev, userMessage]);
@@ -66,23 +55,19 @@ const AudioLLM = () => {
         { headers: { "Content-Type": "application/json" } });
       const botMessage = { sender: "bot", text: response.data.reply };
       setMessages((prev) => [...prev, botMessage]);
-      
-      // if (response.ok) {
-      //   const blob = await response.blob();
-      //   const url = URL.createObjectURL(blob);
-      //   setAudioSrc(url);
-      // } else {
-      //     console.error('Failed to fetch audio');
-      // }
 
       // Speak in the natural sounding voice!!
-      console.log(botMessage)
-      speak(botMessage.text);
-      // Set audio source and play
-      // if (audioRef.current) {
-      //     audioRef.current.src = response.data.audio_url;
-      //     audioRef.current.play();
-      // }
+      const audioUrl = response.data.audio_url;
+      console.log(audioUrl);
+      //  Play the audio response
+       if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        audio.play().catch((error) => {
+            console.error("Error playing audio:", error);
+        });
+        
+      }
+
     } catch (error) {
       console.error("Error sending message:", error);
       const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
@@ -120,12 +105,6 @@ const AudioLLM = () => {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
   }, [messages]);
-
-  // Turns the text into speech.
-  const speak = (text) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
-  };
 
   const toggleListening = () => {
     if (speechRecognition) {
