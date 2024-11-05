@@ -1,5 +1,5 @@
-// A new attempt using sockets!!
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -14,15 +14,40 @@ import StopIcon from "@mui/icons-material/Stop";
 import { useNavigate } from "react-router-dom";
 import io from 'socket.io-client';
 
-const AudioLLM = () => {
+function AudioLLM() {
+  const [group, setGroup] = useState(null);
+  const [step, setStep] = useState(0);
+  const [questions, setQuestions] = useState([
+    "Ask the user: If you flipped a coin, would you want heads or tails?",
+    "Ask the user: If you were playing a game, would you pick the circle or the square piece?",
+    "Ask the user: A close friend asks for your opinion on their recent change in appearance, but you don't think it's good. Would you be fully honest or lie to protect their feelings?",
+  ]);
+  const [currentQuestion, setCurrentQuestion] = useState("");
   const [messages, setMessages] = useState([]);
+  const [fullHistory, setFullHistory] = useState([]);
+  const [initialized, setInitialized] = useState(false);
+  const [context, setContext] = useState({
+    choice: "",
+    reason: "",
+    confidence: "",
+  });
+  const [surveyCompleted, setSurveyCompleted] = useState(false);
+  const [inConversation, setInConversation] = useState(false);
+  const [saveHistory, setSaveHistory] = useState(false);
+  const [nextQuestionButton, setNextQuestionButton] = useState(0);
+  
+  // Audio-specific states
   const [loading, setLoading] = useState(false);
   const [speechRecognition, setSpeechRecognition] = useState(null);
   const [isListening, setIsListening] = useState(false);
+  const [latestUserInput, setLatestUserInput] = useState("");
+  
   const navigate = useNavigate();
   const chatWindowRef = useRef(null);
   const audioRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
+  // Initialize socket connection and group assignment
   useEffect(() => {
     const socket = io('http://localhost:5001', {
       transports: ['websocket', 'polling'],
@@ -36,47 +61,48 @@ const AudioLLM = () => {
     });
     
     socket.on('audio_stream', (data) => {
-      console.log("Successfully received audio output response.")
-      // Add message as text
-      const text_response = { sender: "bot", text: data['text'] };
-      setMessages((prev) => [...prev, text_response]);
-      // Handle audio
+      console.log("Successfully received audio output response.");
+      const botMessage = data['text'];
+      const isReadyToMoveOn = botMessage.includes("Let's move on");
+      const askingToMoveOn = botMessage.includes("are you ready");
+
+      setMessages((prev) => [...prev, { user: "", bot: botMessage }]);
+      
+      // Handle audio playback
       const audioBlob = new Blob([data['audio']], { type: 'audio/wav' });
       const audioUrl = URL.createObjectURL(audioBlob);
       audioRef.current.src = audioUrl;
       audioRef.current.play();
+
+      // Check if we should move to the next step
+      if (step === 3.5) {
+        if (isReadyToMoveOn) {
+          setStep(4);
+        } else if (!askingToMoveOn) {
+          setLatestUserInput("");
+          setInConversation(true);
+        }
+      }
     });
+
+    // Get group assignment
+    axios
+      .get("http://localhost:5001/assign")
+      .then((res) => {
+        setGroup(res.data.group);
+        setCurrentQuestion(questions[0]);
+      })
+      .catch((error) =>
+        console.error("Error fetching group assignment:", error)
+      );
 
     return () => {
       socket.off('audio_stream');
       socket.disconnect();
     };
-  }, []);
+  }, [questions, step]);
 
-  const handleAudioMessage = useCallback(async (message) => {
-    console.log("HANDLE USER MESSAGE")
-    const userMessage = { sender: "user", text: message };
-    setMessages((prev) => [...prev, userMessage]);
-    setLoading(true);
-
-    const socket = io('http://localhost:5001', {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
-
-    try {
-      socket.emit('audio_message', message);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  // Initialize speech recognition
   useEffect(() => {
     if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
       const recognition = new (window.SpeechRecognition ||
@@ -86,8 +112,8 @@ const AudioLLM = () => {
       recognition.continuous = true;
 
       recognition.onresult = async (event) => {
-        const userMessage = event.results[event.results.length - 1][0].transcript;
-        await handleAudioMessage(userMessage);
+        const userInput = event.results[event.results.length - 1][0].transcript;
+        handleUserInput(userInput);
       };
 
       recognition.onend = () => {
@@ -98,13 +124,143 @@ const AudioLLM = () => {
 
       setSpeechRecognition(recognition);
     }
-  }, [handleAudioMessage, isListening]);
+  }, []);
 
+  // Initial interaction effect
   useEffect(() => {
-    if (chatWindowRef.current) {
-      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+    if (group && currentQuestion && !initialized) {
+      handleInteract();
+      setInitialized(true);
+    }
+  }, [group, currentQuestion, initialized]);
+
+  // Step change effect
+  useEffect(() => {
+    const interactAndUpdateStep = async () => {
+      if (initialized) {
+        await handleInteract();
+        if (step === 3) {
+          setStep(3.5);
+        }
+      }
+    };
+
+    interactAndUpdateStep();
+  }, [step]);
+
+  // Conversation effect
+  useEffect(() => {
+    const interactAndUpdate = async () => {
+      if ((initialized && inConversation) || (step === 3.5 && latestUserInput === "")) {
+        await handleInteract();
+        setInConversation(false);
+      }
+    };
+
+    interactAndUpdate();
+  }, [inConversation]);
+
+  // Scroll effect
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Save history effect
+  useEffect(() => {
+    if (saveHistory) {
+      saveCurrentQuestionHistory();
+      setSaveHistory(false);
+    }
+  }, [saveHistory]);
+
+  // Next question button effect
+  useEffect(() => {
+    if (nextQuestionButton === 2) {
+      setSaveHistory(true);
+      setNextQuestionButton(0);
+    }
+  }, [nextQuestionButton]);
+
+  const handleUserInput = (userInput) => {
+    if (!userInput.trim()) return;
+
+    // Store the user's input based on the current step
+    if (step === 0) {
+      setContext({ ...context, choice: userInput });
+    } else if (step === 1) {
+      setContext({ ...context, reason: userInput });
+    } else if (step === 2) {
+      setContext({ ...context, confidence: userInput });
+    }
+
+    // Display user message
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { user: userInput, bot: "" },
+    ]);
+
+    setLatestUserInput(userInput);
+
+    if (step === 3.5) {
+      setInConversation(true);
+    } else if (step < 6) {
+      setStep(step + 1);
+    } else {
+      if (questions.length > 1) {
+        setNextQuestionButton(1);
+      } else {
+        setSaveHistory(true);
+      }
+    }
+  };
+
+  const handleInteract = async () => {
+    const socket = io('http://localhost:5001');
+    setLoading(true);
+
+    try {
+      const payload = {
+        question: currentQuestion,
+        step: step,
+        user_input: latestUserInput,
+        context: context,
+      };
+
+      socket.emit('audio_message', JSON.stringify(payload));
+    } catch (error) {
+      console.error("Error interacting with LLM:", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { user: "", bot: "Sorry, an error occurred. Please try again." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveCurrentQuestionHistory = () => {
+    setFullHistory((prevHistory) => [
+      ...prevHistory,
+      { separator: `Question: ${currentQuestion}` },
+      ...messages,
+    ]);
+
+    if (questions.length > 1) {
+      setMessages([]);
+      const remainingQuestions = questions.slice(1);
+      setQuestions(remainingQuestions);
+      setCurrentQuestion(remainingQuestions[0]);
+      setStep(0);
+    } else {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { user: "", bot: "Thank you for participating!" },
+      ]);
+      setSurveyCompleted(true);
+    }
+  };
 
   const toggleListening = () => {
     if (speechRecognition) {
@@ -116,6 +272,27 @@ const AudioLLM = () => {
         setIsListening(true);
       }
     }
+  };
+
+  const handleExportMessages = () => {
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      fullHistory
+        .map((msg) => {
+          if (msg.separator) return msg.separator;
+          const userPart = msg.user ? `User: ${msg.user}` : "";
+          const botPart = msg.bot ? `Bot: ${msg.bot}` : "";
+          return [userPart, botPart].filter(Boolean).join(",");
+        })
+        .join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const a = document.createElement("a");
+    a.setAttribute("href", encodedUri);
+    a.setAttribute("download", "llm_messages.csv");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   return (
@@ -131,53 +308,79 @@ const AudioLLM = () => {
           Back to Home
         </Button>
       </Box>
-      <Paper elevation={3} className="p-6 w-full max-w-screen-md h-[80vh] flex flex-col">
-        <Typography variant="h4" className="text-center mb-4">
-          LLM Study: Audio Interaction
-        </Typography>
-  
-        <Box 
-          ref={chatWindowRef}
-          className="overflow-y-auto border p-4 rounded-lg flex-1 mb-4" 
-          id="chat-window"
-        >
-          {messages.map((msg, index) => (
-            <Box
-              key={index}
-              className={`mb-2 ${msg.sender === "user" ? "text-right" : "text-left"}`}
-            >
-              <Box
-                className={`inline-block max-w-[60%] p-2 rounded-lg ${
-                  msg.sender === "user"
-                    ? "bg-blue-500 text-white ml-auto"
-                    : "bg-gray-300 text-black"
-                }`}
-                style={{ width: 'auto' }}
-              >
-                <Typography variant="body2">
-                  {msg.text}
-                </Typography>
-              </Box>
-            </Box>
-          ))}
-          {loading && (
-            <Box display="flex" justifyContent="center" alignItems="center">
-              <CircularProgress size={24} />
-            </Box>
-          )}
+      {surveyCompleted && (
+        <Box className="absolute top-4 right-4">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleExportMessages}
+          >
+            Export Messages
+          </Button>
         </Box>
-  
-        <IconButton
-          onClick={toggleListening}
-          color="primary"
-          className="w-16 h-16 mx-auto"
-          sx={{ backgroundColor: isListening ? 'rgba(25, 118, 210, 0.1)' : 'transparent' }}
-        >
-          {isListening ? <StopIcon fontSize="large" /> : <MicIcon fontSize="large" />}
-        </IconButton>
+      )}
+      <Paper elevation={3} className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col">
+        <Typography variant="h4" className="text-center mb-4">
+          LLM Study: {group ? "Audio Interaction" : "Loading..."}
+        </Typography>
+
+        {group && (
+          <>
+            <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
+              {messages.map((msg, index) => (
+                <Box key={index} mb={2} className="flex justify-between">
+                  {msg.bot && (
+                    <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
+                      <Typography variant="body2">{msg.bot}</Typography>
+                    </Box>
+                  )}
+                  {msg.user && (
+                    <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
+                      <Typography variant="body2">{msg.user}</Typography>
+                    </Box>
+                  )}
+                </Box>
+              ))}
+              <div ref={messagesEndRef} />
+              {loading && (
+                <Box display="flex" justifyContent="center">
+                  <CircularProgress size={24} />
+                </Box>
+              )}
+            </Box>
+
+            {nextQuestionButton === 0 && !surveyCompleted && (
+              <Box display="flex" justifyContent="center" mt={2}>
+                <IconButton
+                  onClick={toggleListening}
+                  color="primary"
+                  className="w-16 h-16"
+                  sx={{
+                    backgroundColor: isListening ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
+                  }}
+                >
+                  {isListening ? <StopIcon fontSize="large" /> : <MicIcon fontSize="large" />}
+                </IconButton>
+              </Box>
+            )}
+            
+            {nextQuestionButton === 1 && (
+              <Box className="mt-4" display="flex">
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => setNextQuestionButton(2)}
+                  className="flex-grow"
+                >
+                  Move to Next Question
+                </Button>
+              </Box>
+            )}
+          </>
+        )}
       </Paper>
     </div>
-  );  
-};
+  );
+}
 
 export default AudioLLM;
