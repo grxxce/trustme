@@ -49,14 +49,6 @@ const AudioLLM = () => {
     socket.on('connect', () => {
       console.log('Connected to server');
     });
-
-    socket.on('connect_error', (error) => {
-      console.log('Connection error', error);
-    });
-    
-    socket.io.on("error", (error) => {
-      console.log('Socket.IO error', error);
-    });
     
     socket.on('audio_stream', (data) => {
       console.log(data)
