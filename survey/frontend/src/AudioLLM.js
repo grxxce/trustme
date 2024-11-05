@@ -18,9 +18,9 @@ function AudioLLM() {
   const [group, setGroup] = useState(null);
   const [step, setStep] = useState(0);
   const [questions, setQuestions] = useState([
-    "Ask the user: If you flipped a coin, would you want heads or tails?",
-    "Ask the user: If you were playing a game, would you pick the circle or the square piece?",
-    "Ask the user: A close friend asks for your opinion on their recent change in appearance, but you don't think it's good. Would you be fully honest or lie to protect their feelings?",
+    "If you flipped a coin, would you want heads or tails?",
+    "If you were playing a game, would you pick the circle or the square piece?",
+    "A close friend asks for your opinion on their recent change in appearance, but you don't think it's good. Would you be fully honest or lie to protect their feelings?",
   ]);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [messages, setMessages] = useState([]);
@@ -61,7 +61,7 @@ function AudioLLM() {
     });
     
     socket.on('audio_stream', (data) => {
-      console.log("Successfully received audio output response.");
+      console.log("(3) Get response back", data)
       const botMessage = data['text'];
       const isReadyToMoveOn = botMessage.includes("Let's move on");
       const askingToMoveOn = botMessage.includes("are you ready");
@@ -85,7 +85,7 @@ function AudioLLM() {
       }
     });
 
-    // Get group assignment
+    // Get group assignment, useless?
     axios
       .get("http://localhost:5001/assign")
       .then((res) => {
@@ -98,6 +98,7 @@ function AudioLLM() {
 
     return () => {
       socket.off('audio_stream');
+      console.log("logging off")
       socket.disconnect();
     };
   }, [questions, step]);
@@ -112,6 +113,7 @@ function AudioLLM() {
       recognition.continuous = true;
 
       recognition.onresult = async (event) => {
+        console.log("(4) Detecting speech")
         const userInput = event.results[event.results.length - 1][0].transcript;
         handleUserInput(userInput);
       };
@@ -126,9 +128,10 @@ function AudioLLM() {
     }
   }, []);
 
-  // Initial interaction effect
+  // (1) INIT WEBSOCKET
   useEffect(() => {
     if (group && currentQuestion && !initialized) {
+      console.log("(1) Init with starting question")
       handleInteract();
       setInitialized(true);
     }
@@ -138,6 +141,7 @@ function AudioLLM() {
   useEffect(() => {
     const interactAndUpdateStep = async () => {
       if (initialized) {
+        console.log("(6) Register step change and call Handle Interact")
         await handleInteract();
         if (step === 3) {
           setStep(3.5);
@@ -184,17 +188,34 @@ function AudioLLM() {
   }, [nextQuestionButton]);
 
   const handleUserInput = (userInput) => {
+    console.log("(5) Handle user input and increment step")
     if (!userInput.trim()) return;
 
     // Store the user's input based on the current step
+    let newContext = { ...context };
+    
     if (step === 0) {
-      setContext({ ...context, choice: userInput });
+        // For step 0, store only the choice
+        newContext = { 
+            ...newContext, 
+            choice: userInput 
+        };
     } else if (step === 1) {
-      setContext({ ...context, reason: userInput });
+        // For step 1, store the reason while preserving the previous choice
+        newContext = { 
+            ...newContext,
+            reason: userInput 
+        };
     } else if (step === 2) {
-      setContext({ ...context, confidence: userInput });
+        // For step 2, store the confidence while preserving previous choice and reason
+        newContext = { 
+            ...newContext,
+            confidence: userInput 
+        };
     }
 
+    // Update the context state
+    setContext(newContext);
     // Display user message
     setMessages((prevMessages) => [
       ...prevMessages,
@@ -217,6 +238,7 @@ function AudioLLM() {
   };
 
   const handleInteract = async () => {
+    console.log("(2) Handle interact (call backend) on step ", step)
     const socket = io('http://localhost:5001');
     setLoading(true);
 
@@ -227,7 +249,6 @@ function AudioLLM() {
         user_input: latestUserInput,
         context: context,
       };
-
       socket.emit('audio_message', JSON.stringify(payload));
     } catch (error) {
       console.error("Error interacting with LLM:", error);
