@@ -48,6 +48,7 @@ function AudioLLM() {
   const messagesEndRef = useRef(null);
 
   const socketRef = useRef(null)
+  const [socketConnected, setSocketConnected] = useState(false);
 
   // Initialize socket connection and group assignment
   useEffect(() => {
@@ -57,9 +58,16 @@ function AudioLLM() {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
+    console.log("started a socket")
 
     socketRef.current.on('connect', () => {
       console.log('Connected to server');
+      setSocketConnected(true);
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('Disconnected from server');
+      setSocketConnected(false);
     });
     
     socketRef.current.on('audio_stream', (data) => {
@@ -77,6 +85,7 @@ function AudioLLM() {
       audioRef.current.play();
 
       // Check if we should move to the next step
+      console.log("step currently: ", step)
       if (step === 3.5) {
         if (isReadyToMoveOn) {
           setStep(4);
@@ -86,24 +95,30 @@ function AudioLLM() {
         }
       }
     });
-
-    // Get group assignment, useless?
-    axios
-      .get("http://localhost:5001/assign")
-      .then((res) => {
-        setGroup(res.data.group);
-        setCurrentQuestion(questions[0]);
-      })
-      .catch((error) =>
-        console.error("Error fetching group assignment:", error)
-      );
-
+    
     return () => {
-      socketRef.current.off('audio_stream');
-      console.log("logging off")
-      socketRef.current.disconnect();
+      if (socketRef.current) {
+        socketRef.current.off('connect');
+        socketRef.current.off('disconnect');
+        socketRef.current.off('audio_stream');
+        socketRef.current.disconnect();
+      }
     };
-  }, [questions, step]);
+  }, []); // Empty dependency array - only run once
+
+  // Wait for socket connection before making group assignment request
+  useEffect(() => {
+    if (socketConnected) {
+      axios.get("http://localhost:5001/assign")
+        .then((res) => {
+          setGroup(res.data.group);
+          setCurrentQuestion(questions[0]);
+        })
+        .catch((error) =>
+          console.error("Error fetching group assignment:", error)
+        );
+    }
+  }, [socketConnected, questions]);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -137,7 +152,7 @@ function AudioLLM() {
       handleInteract();
       setInitialized(true);
     }
-  }, [group, currentQuestion, initialized]);
+  }, [socketConnected, group, currentQuestion, initialized]);
 
   // Step change effect
   useEffect(() => {
@@ -235,6 +250,7 @@ function AudioLLM() {
       setInConversation(true);
     } else if (step < 6) {
       setStep(step + 1);
+      console.log("incremented step supposedly: ", step)
     } else {
       if (questions.length > 1) {
         setNextQuestionButton(1);
@@ -249,10 +265,9 @@ function AudioLLM() {
     setLoading(true);
 
     try {
-
-      if (!socketRef.current?.connected) {
-        console.log("Socket not connected, reconnecting...");
-        socketRef.current = io('http://localhost:5001');
+      if (!socketConnected) {
+        console.log("Waiting for socket connection...");
+        return; // Will retry when socket connects due to socketConnected dependency
       }
       
       const payload = {
@@ -261,7 +276,13 @@ function AudioLLM() {
         user_input: latestUserInput,
         context: context,
       };
-      socketRef.current.emit('audio_message', JSON.stringify(payload));
+
+      if (socketRef.current?.connected) {
+        socketRef.current.emit('audio_message', JSON.stringify(payload));
+      } else {
+        console.error("Socket not connected IN INTERACT");
+        throw new Error("Socket not connecte IN INERACT");
+      }
     } catch (error) {
       console.error("Error interacting with LLM:", error);
       setMessages((prevMessages) => [
