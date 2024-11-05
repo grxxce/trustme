@@ -13,7 +13,9 @@ import { useNavigate } from "react-router-dom";
 import PreSurveyForm from "./PreSurveyForm";
 
 function TextLLM() {
-  const [preSurveyData, setPreSurveyData] = useState(null);
+  // todo: change to null after debugging
+  const [preSurveyData, setPreSurveyData] = useState(true);
+
   const [group, setGroup] = useState(null);
   const [step, setStep] = useState(0);
   const [questions, setQuestions] = useState([
@@ -139,12 +141,14 @@ function TextLLM() {
     setLatestUserInput(userInput); // Save input for use in LLM
     setUserInput(""); // Clear the input field after user submits
 
+    // Increase step logic
     if (step === 3.5) {
       setInConversation(true);
     } else if (step < 6) {
       setStep(step + 1);
     } else {
       if (questions.length > 1) {
+        // only triggered when we've gone through all 6 steps of a question
         setNextQuestionButton(1);
       } else {
         setSaveHistory(true);
