@@ -31,6 +31,8 @@ function AudioLLM() {
     reason: "",
     confidence: "",
   });
+  const [shouldIncrementStep, setShouldIncrementStep] = useState(false);
+
   const [surveyCompleted, setSurveyCompleted] = useState(false);
   const [inConversation, setInConversation] = useState(false);
   const [saveHistory, setSaveHistory] = useState(false);
@@ -41,6 +43,8 @@ function AudioLLM() {
   const [speechRecognition, setSpeechRecognition] = useState(null);
   const [isListening, setIsListening] = useState(false);
   const [latestUserInput, setLatestUserInput] = useState("");
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   
   const navigate = useNavigate();
   const chatWindowRef = useRef(null);
@@ -94,7 +98,7 @@ function AudioLLM() {
           setInConversation(true);
         }
       }
-    });
+    }, );
     
     return () => {
       if (socketRef.current) {
@@ -167,7 +171,7 @@ function AudioLLM() {
     };
 
     interactAndUpdateStep();
-  }, [step]);
+  }, [step]); // Add all dependencies
 
   useEffect(() => {
     console.log("Detecting step change: ", step);
@@ -209,6 +213,7 @@ function AudioLLM() {
   }, [nextQuestionButton]);
 
   const handleUserInput = (userInput) => {
+    if (isTransitioning) return;
     console.log("(5) Handle user input and increment step from: ", step)
     if (!userInput.trim()) return;
 
@@ -246,19 +251,35 @@ function AudioLLM() {
 
     setLatestUserInput(userInput);
 
-    if (step === 3.5) {
-      setInConversation(true);
-    } else if (step < 6) {
-      setStep(step + 1);
-      console.log("incremented step supposedly: ", step)
-    } else {
-      if (questions.length > 1) {
-        setNextQuestionButton(1);
-      } else {
-        setSaveHistory(true);
-      }
-    }
+    setShouldIncrementStep(true)
+
   };
+
+  useEffect(() => {
+    if (shouldIncrementStep) {
+      console.log("Incrementing step from:", step);
+      if (step === 3.5) {
+        setInConversation(true);
+      } else if (step < 6) {
+        setStep(step + 1);
+      }
+      setShouldIncrementStep(false);
+    }
+  }, [shouldIncrementStep, step]);
+  //   console.log("Incrementing step from:", step);
+  //   if (step === 3.5) {
+  //     setInConversation(true);
+  //   } else if (step < 6) {
+  //     setStep(step + 1);
+  //     console.log("incremented step supposedly: ", step)
+  //   } else {
+  //     if (questions.length > 1) {
+  //       setNextQuestionButton(1);
+  //     } else {
+  //       setSaveHistory(true);
+  //     }
+  //   }
+  // };
 
   const handleInteract = async () => {
     console.log("(2) Handle interact (call backend) on step ", step)
@@ -269,7 +290,7 @@ function AudioLLM() {
         console.log("Waiting for socket connection...");
         return; // Will retry when socket connects due to socketConnected dependency
       }
-      
+      console.log("step right before call: ", step)
       const payload = {
         question: currentQuestion,
         step: step,
