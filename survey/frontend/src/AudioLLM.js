@@ -12,17 +12,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MicIcon from "@mui/icons-material/Mic";
 import StopIcon from "@mui/icons-material/Stop";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
 import io from 'socket.io-client';
-
-// const socket = io('http://localhost:5001', {
-//   transports: ['websocket', 'polling']
-// });
-
-
-
-// const socket = io('http://localhost:5001');
 
 const AudioLLM = () => {
   const [messages, setMessages] = useState([]);
@@ -32,7 +22,6 @@ const AudioLLM = () => {
   const navigate = useNavigate();
   const chatWindowRef = useRef(null);
   const audioRef = useRef(null);
-  // const socketRef = useRef();
 
   useEffect(() => {
     const socket = io('http://localhost:5001', {
@@ -41,40 +30,34 @@ const AudioLLM = () => {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
-    // socket.on('bot_response', (data) => {
-    //   setMessages(prev => [...prev, { text: data.text, isBot: true }]);
-    // });
-    // socketRef.current = io('http://localhost:5001'); // Replace with your Flask server address
-    console.log("AHHHHH")
+
     socket.on('connect', () => {
       console.log('Connected to server');
     });
     
     socket.on('audio_stream', (data) => {
-      console.log(data)
-      console.log("BBBBBBB")
-      // if (audioRef.current) {
-      //   audioRef.current.src = data.audio_url;
-      //   audioRef.current.play();
-      // }
-      const audioBlob = new Blob([data], { type: 'audio/wav' }); // Adjust type as needed
+      console.log("Successfully received audio output response.")
+      // Add message as text
+      const text_response = { sender: "bot", text: data['text'] };
+      setMessages((prev) => [...prev, text_response]);
+      // Handle audio
+      const audioBlob = new Blob([data['audio']], { type: 'audio/wav' });
       const audioUrl = URL.createObjectURL(audioBlob);
       audioRef.current.src = audioUrl;
       audioRef.current.play();
     });
 
     return () => {
-      // socket.off('bot_response');
       socket.off('audio_stream');
       socket.disconnect();
     };
   }, []);
 
-  const handleUserMessage = useCallback(async (message) => {
+  const handleAudioMessage = useCallback(async (message) => {
     console.log("HANDLE USER MESSAGE")
     const userMessage = { sender: "user", text: message };
-    // setMessages((prev) => [...prev, userMessage]);
-    // setLoading(true);
+    setMessages((prev) => [...prev, userMessage]);
+    setLoading(true);
 
     const socket = io('http://localhost:5001', {
       transports: ['websocket', 'polling'],
@@ -84,69 +67,15 @@ const AudioLLM = () => {
     });
 
     try {
-      socket.emit('handle_audio', message);
-
-
-      // const response = await axios.post('http://localhost:5001/message', { message }, 
-      //   { headers: { "Content-Type": "application/json" } });
-      // const botMessage = { sender: "bot", text: response.data.reply };
-      // setMessages((prev) => [...prev, botMessage]);
-
-      // // Speak in the natural sounding voice!!
-      // const audioUrl = response.data.audio_url;
-      // console.log(audioUrl);
-      // //  Play the audio response
-      //  if (audioUrl) {
-      //   const audio = new Audio(audioUrl);
-      //   audio.play().catch((error) => {
-      //       console.error("Error playing audio:", error);
-      //   });
-        
-      // }
-
+      socket.emit('audio_message', message);
     } catch (error) {
       console.error("Error sending message:", error);
-      // const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
-      // setMessages((prev) => [...prev, errorMessage]);
+      const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
   }, []);
-
-  // const handleUserMessage = useCallback(async (message) => {
-  //   const userMessage = { sender: "user", text: message };
-  //   setMessages((prev) => [...prev, userMessage]);
-  //   setLoading(true);
-
-  //   try {
-  //     socket.emit('handle_audio', message);
-
-
-  //     const response = await axios.post('http://localhost:5001/message', { message }, 
-  //       { headers: { "Content-Type": "application/json" } });
-  //     const botMessage = { sender: "bot", text: response.data.reply };
-  //     setMessages((prev) => [...prev, botMessage]);
-
-  //     // Speak in the natural sounding voice!!
-  //     const audioUrl = response.data.audio_url;
-  //     console.log(audioUrl);
-  //     //  Play the audio response
-  //      if (audioUrl) {
-  //       const audio = new Audio(audioUrl);
-  //       audio.play().catch((error) => {
-  //           console.error("Error playing audio:", error);
-  //       });
-        
-  //     }
-
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-  //     const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
-  //     setMessages((prev) => [...prev, errorMessage]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
 
   useEffect(() => {
     if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
@@ -158,7 +87,7 @@ const AudioLLM = () => {
 
       recognition.onresult = async (event) => {
         const userMessage = event.results[event.results.length - 1][0].transcript;
-        await handleUserMessage(userMessage);
+        await handleAudioMessage(userMessage);
       };
 
       recognition.onend = () => {
@@ -169,7 +98,7 @@ const AudioLLM = () => {
 
       setSpeechRecognition(recognition);
     }
-  }, [handleUserMessage, isListening]);
+  }, [handleAudioMessage, isListening]);
 
   useEffect(() => {
     if (chatWindowRef.current) {
