@@ -12,14 +12,14 @@ from flask_socketio import SocketIO, emit
 
 
 app = Flask(__name__)
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+CORS(app, resources={r"/*": {"origins": "*"}})
+socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=60)
 
 load_dotenv()
 
-app = Flask(__name__)
+# app = Flask(__name__)
 # CORS(app)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+# CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -166,57 +166,105 @@ def check_readiness_with_llm(user_input):
 
 
 # Audio!!
-@app.route('/message', methods=['OPTIONS', 'POST'])
-def message():
-    if request.method == 'OPTIONS':
-        # Respond to the OPTIONS request with CORS headers
-        response = jsonify({'status': 'ok'})
-        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
-        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-        return response, 200
+# @app.route('/message', methods=['OPTIONS', 'POST'])
+# def message():
+#     if request.method == 'OPTIONS':
+#         # Respond to the OPTIONS request with CORS headers
+#         response = jsonify({'status': 'ok'})
+#         response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
+#         response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+#         response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+#         return response, 200
     
-    data = request.json
-    user_message = data.get('message')
+#     data = request.json
+#     user_message = data.get('message')
     
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a friendly assistant."},
-            {"role": "user", "content": user_message}
-        ]
-    )
+#     response = openai.chat.completions.create(
+#         model="gpt-4o-mini",
+#         messages=[
+#             {"role": "system", "content": "You are a friendly assistant."},
+#             {"role": "user", "content": user_message}
+#         ]
+#     )
 
-    bot_reply = response.choices[0].message.content
+#     bot_reply = response.choices[0].message.content
 
-    # MORE REALISTIC VOICE
-    # Generate audio from the bot's reply
-    audio_response = openai.audio.speech.create(
-        model="tts-1",
-        voice="alloy",
-        input=bot_reply
-    )
+#     # MORE REALISTIC VOICE
+#     # Generate audio from the bot's reply
+#     audio_response = openai.audio.speech.create(
+#         model="tts-1",
+#         voice="alloy",
+#         input=bot_reply
+#     )
 
-    # Define the path where you want to save the MP3 file
-    output_path = "output_speech.mp3"
+#     # Define the path where you want to save the MP3 file
+#     # output_path = "output_speech.mp3"
 
-    # Save the audio content to the file
-    with open(output_path, "wb") as audio_file:
-        audio_file.write(audio_response.content)
+#     # # Save the audio content to the file
+#     # with open(output_path, "wb") as audio_file:
+#     #     audio_file.write(audio_response.content)
 
-    print(f"Audio saved to {output_path}")
+#     # print(f"Audio saved to {output_path}")
     
-    # Store the audio content in the global variable
-    # audio_stream = io.BytesIO(audio_response.content)
+#     # Store the audio content in the global variable
+#     # audio_stream = io.BytesIO(audio_response.content)
 
-    return jsonify({'reply': bot_reply, 'audio_url': '/audio/output_speech.mp3'})
+#     return jsonify({'reply': bot_reply, 'audio_url': '/audio/output_speech.mp3'})
 
-@app.route('/audio/<filename>')
-def audio(filename):
-    return send_file(filename, mimetype='audio/mpeg')
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on('handle_audio')
+def handle_audio(data):
+    # Process audio data here (e.g., read from a file)
+    # data = request.json
+    # user_message = data.get('message')
+    print("HANDLING AUDIO!!")
+    print(data)
+    try:
+        user_message = data
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a friendly assistant."},
+                {"role": "user", "content": user_message}
+            ]
+        )
+        bot_reply = response.choices[0].message.content
+        # MORE REALISTIC VOICE
+        # Generate audio from the bot's reply
+        audio_response = openai.audio.speech.create(
+            model="tts-1",
+            voice="alloy",
+            input=bot_reply
+        )
+
+        # Store the audio content in the global variable
+        # audio_stream = io.BytesIO(audio_response.content)
+
+        # Emit the audio chunk to the client
+        print("AHHHHHHHIIIIIIII")
+        # print(audio_response.content[:10])
+        emit('audio_stream', {'data': 'Message received!'})
+        print("Emitted audio_stream")
+
+
+        # emit('audio_stream', audio_response.content)
+    except Exception as e:
+        print(f"Error in handle_audio: {str(e)}")
+        emit('error', {'message': 'An error occurred processing your request'})
+
+# @app.route('/audio/<filename>')
+# def audio(filename):
+#     return send_file(filename, mimetype='audio/mpeg')
 
 if __name__ == "__main__":
-    app.run(debug=True, host="localhost", port=5001)
-    # socketio.run(app, debug=True, host="localhost", port=5001)
+    # app.run(debug=True, host="localhost", port=5001)
+    socketio.run(app, debug=True, host="localhost", port=5001)
 
 

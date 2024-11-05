@@ -16,7 +16,13 @@ import axios from "axios";
 
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:5001');
+// const socket = io('http://localhost:5001', {
+//   transports: ['websocket', 'polling']
+// });
+
+
+
+// const socket = io('http://localhost:5001');
 
 const AudioLLM = () => {
   const [messages, setMessages] = useState([]);
@@ -26,56 +32,129 @@ const AudioLLM = () => {
   const navigate = useNavigate();
   const chatWindowRef = useRef(null);
   const audioRef = useRef(null);
+  // const socketRef = useRef();
 
   useEffect(() => {
-    socket.on('bot_response', (data) => {
-      setMessages(prev => [...prev, { text: data.text, isBot: true }]);
+    const socket = io('http://localhost:5001', {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+    // socket.on('bot_response', (data) => {
+    //   setMessages(prev => [...prev, { text: data.text, isBot: true }]);
+    // });
+    // socketRef.current = io('http://localhost:5001'); // Replace with your Flask server address
+    console.log("AHHHHH")
+    socket.on('connect', () => {
+      console.log('Connected to server');
     });
 
-    socket.on('audio_ready', (data) => {
-      if (audioRef.current) {
-        audioRef.current.src = data.audio_url;
-        audioRef.current.play();
-      }
+    socket.on('connect_error', (error) => {
+      console.log('Connection error', error);
+    });
+    
+    socket.io.on("error", (error) => {
+      console.log('Socket.IO error', error);
+    });
+    
+    socket.on('audio_stream', (data) => {
+      console.log(data)
+      console.log("BBBBBBB")
+      // if (audioRef.current) {
+      //   audioRef.current.src = data.audio_url;
+      //   audioRef.current.play();
+      // }
+      const audioBlob = new Blob([data], { type: 'audio/wav' }); // Adjust type as needed
+      const audioUrl = URL.createObjectURL(audioBlob);
+      audioRef.current.src = audioUrl;
+      audioRef.current.play();
     });
 
     return () => {
-      socket.off('bot_response');
-      socket.off('audio_ready');
+      // socket.off('bot_response');
+      socket.off('audio_stream');
+      socket.disconnect();
     };
   }, []);
 
   const handleUserMessage = useCallback(async (message) => {
+    console.log("HANDLE USER MESSAGE")
     const userMessage = { sender: "user", text: message };
-    setMessages((prev) => [...prev, userMessage]);
-    setLoading(true);
+    // setMessages((prev) => [...prev, userMessage]);
+    // setLoading(true);
+
+    const socket = io('http://localhost:5001', {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
 
     try {
-      const response = await axios.post('http://localhost:5001/message', { message }, 
-        { headers: { "Content-Type": "application/json" } });
-      const botMessage = { sender: "bot", text: response.data.reply };
-      setMessages((prev) => [...prev, botMessage]);
+      socket.emit('handle_audio', message);
 
-      // Speak in the natural sounding voice!!
-      const audioUrl = response.data.audio_url;
-      console.log(audioUrl);
-      //  Play the audio response
-       if (audioUrl) {
-        const audio = new Audio(audioUrl);
-        audio.play().catch((error) => {
-            console.error("Error playing audio:", error);
-        });
+
+      // const response = await axios.post('http://localhost:5001/message', { message }, 
+      //   { headers: { "Content-Type": "application/json" } });
+      // const botMessage = { sender: "bot", text: response.data.reply };
+      // setMessages((prev) => [...prev, botMessage]);
+
+      // // Speak in the natural sounding voice!!
+      // const audioUrl = response.data.audio_url;
+      // console.log(audioUrl);
+      // //  Play the audio response
+      //  if (audioUrl) {
+      //   const audio = new Audio(audioUrl);
+      //   audio.play().catch((error) => {
+      //       console.error("Error playing audio:", error);
+      //   });
         
-      }
+      // }
 
     } catch (error) {
       console.error("Error sending message:", error);
-      const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
-      setMessages((prev) => [...prev, errorMessage]);
+      // const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
+      // setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // const handleUserMessage = useCallback(async (message) => {
+  //   const userMessage = { sender: "user", text: message };
+  //   setMessages((prev) => [...prev, userMessage]);
+  //   setLoading(true);
+
+  //   try {
+  //     socket.emit('handle_audio', message);
+
+
+  //     const response = await axios.post('http://localhost:5001/message', { message }, 
+  //       { headers: { "Content-Type": "application/json" } });
+  //     const botMessage = { sender: "bot", text: response.data.reply };
+  //     setMessages((prev) => [...prev, botMessage]);
+
+  //     // Speak in the natural sounding voice!!
+  //     const audioUrl = response.data.audio_url;
+  //     console.log(audioUrl);
+  //     //  Play the audio response
+  //      if (audioUrl) {
+  //       const audio = new Audio(audioUrl);
+  //       audio.play().catch((error) => {
+  //           console.error("Error playing audio:", error);
+  //       });
+        
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error sending message:", error);
+  //     const errorMessage = { sender: "bot", text: "Sorry, an error occurred. Please try again." };
+  //     setMessages((prev) => [...prev, errorMessage]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
   useEffect(() => {
     if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
@@ -120,7 +199,7 @@ const AudioLLM = () => {
 
   return (
     <div className="App min-h-screen bg-gray-100 flex items-center justify-center h-screen overflow-hidden relative">
-      {/* <audio ref={audioRef} style={{ display: 'none' }} /> */}
+      <audio ref={audioRef} style={{ display: 'none' }} />
       <Box className="absolute top-4 left-4">
         <Button
           variant="text"
