@@ -1,30 +1,21 @@
-from flask import Flask, jsonify, request, Response, send_file
-from flask_cors import CORS, cross_origin
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 import openai
 import os
 from dotenv import load_dotenv
 # Realtime API
 from flask_socketio import SocketIO, emit
-# import asyncio
-# import websockets
-# import json
-# import io
 
-
+# Set up the project
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+# Create a socket for streaming audio for the AudioLLM
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=60)
 
 load_dotenv()
 
-# app = Flask(__name__)
-# CORS(app)
-# CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
-
-
+# Initialize necessary openai keys and the realtime URL.
 openai.api_key = os.getenv("OPENAI_API_KEY")
-OPENAI_REALTIME_URL = "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01"
-
 
 @app.route("/assign", methods=["GET"])
 def assign_group():
@@ -165,45 +156,50 @@ def check_readiness_with_llm(user_input):
     return reply.lower() == "true"
 
 
-# Audio!!
+# Code for the Audio LLM
 
+# Confirm that our socket is connected properly.
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
 
+
+# Confirm that our socket is disconnected properly.
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected')
 
-@socketio.on('handle_audio')
-def handle_audio(data):
-    # Process audio data here (e.g., read from a file)
-    print("HANDLING AUDIO!!")
+# This function is called upon whenever a user speaks to the LLM.
+# It is called via the socket by the `handleAudioMessage` function in AudioLLM.js.
+# It will then make a call to OpenAI to generate a response, which will then be used
+# to generate the audio output.
+# The audio output will then be streamed through the socket through `audio_stream` back into AudioLLM.js.
+@socketio.on('audio_message')
+def audio_message(message):
     try:
-        user_message = data
+        # Generate AI output from OpenAI
         response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a friendly assistant."},
-                {"role": "user", "content": user_message}
+                {"role": "user", "content": message}
             ]
         )
-        bot_reply = response.choices[0].message.content
+
+        # Use the reply
         audio_response = openai.audio.speech.create(
             model="tts-1",
             voice="alloy",
-            input=bot_reply
+            input=response.choices[0].message.content
         )
 
-        # Emit the audio chunk to the client
-        print("Emitted audio_stream")
-        socketio.emit('audio_stream', audio_response.content)
+        # Stream the audio to the client.
+        socketio.emit('audio_stream', {'audio': audio_response.content, 'text': response.choices[0].message.content})
     except Exception as e:
         print(f"Error in handle_audio: {str(e)}")
         emit('error', {'message': 'An error occurred processing your request'})
 
 if __name__ == "__main__":
-    # app.run(debug=True, host="localhost", port=5001)
     socketio.run(app, debug=True, host="localhost", port=5001)
 
 
