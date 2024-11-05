@@ -47,20 +47,22 @@ function AudioLLM() {
   const audioRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+  const socketRef = useRef(null)
+
   // Initialize socket connection and group assignment
   useEffect(() => {
-    const socket = io('http://localhost:5001', {
+    socketRef.current = io('http://localhost:5001', {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
 
-    socket.on('connect', () => {
+    socketRef.current.on('connect', () => {
       console.log('Connected to server');
     });
     
-    socket.on('audio_stream', (data) => {
+    socketRef.current.on('audio_stream', (data) => {
       console.log("(3) Get response back", data)
       const botMessage = data['text'];
       const isReadyToMoveOn = botMessage.includes("Let's move on");
@@ -97,9 +99,9 @@ function AudioLLM() {
       );
 
     return () => {
-      socket.off('audio_stream');
+      socketRef.current.off('audio_stream');
       console.log("logging off")
-      socket.disconnect();
+      socketRef.current.disconnect();
     };
   }, [questions, step]);
 
@@ -141,7 +143,7 @@ function AudioLLM() {
   useEffect(() => {
     const interactAndUpdateStep = async () => {
       if (initialized) {
-        console.log("(6) Register step change and call Handle Interact")
+        console.log("(6) Register step change and call HandleInteract")
         await handleInteract();
         if (step === 3) {
           setStep(3.5);
@@ -150,6 +152,10 @@ function AudioLLM() {
     };
 
     interactAndUpdateStep();
+  }, [step]);
+
+  useEffect(() => {
+    console.log("Detecting step change: ", step);
   }, [step]);
 
   // Conversation effect
@@ -188,7 +194,7 @@ function AudioLLM() {
   }, [nextQuestionButton]);
 
   const handleUserInput = (userInput) => {
-    console.log("(5) Handle user input and increment step")
+    console.log("(5) Handle user input and increment step from: ", step)
     if (!userInput.trim()) return;
 
     // Store the user's input based on the current step
@@ -216,6 +222,7 @@ function AudioLLM() {
 
     // Update the context state
     setContext(newContext);
+    console.log("(5.1) updating context: ", newContext)
     // Display user message
     setMessages((prevMessages) => [
       ...prevMessages,
@@ -239,17 +246,22 @@ function AudioLLM() {
 
   const handleInteract = async () => {
     console.log("(2) Handle interact (call backend) on step ", step)
-    const socket = io('http://localhost:5001');
     setLoading(true);
 
     try {
+
+      if (!socketRef.current?.connected) {
+        console.log("Socket not connected, reconnecting...");
+        socketRef.current = io('http://localhost:5001');
+      }
+      
       const payload = {
         question: currentQuestion,
         step: step,
         user_input: latestUserInput,
         context: context,
       };
-      socket.emit('audio_message', JSON.stringify(payload));
+      socketRef.current.emit('audio_message', JSON.stringify(payload));
     } catch (error) {
       console.error("Error interacting with LLM:", error);
       setMessages((prevMessages) => [
