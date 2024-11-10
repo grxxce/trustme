@@ -16,12 +16,6 @@ socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=60)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-@app.route("/assign", methods=["GET"])
-def assign_group():
-    group = "text"
-    return jsonify({"group": group})
-
-
 @app.route("/interact", methods=["POST"])
 def interact():
     data = request.json
