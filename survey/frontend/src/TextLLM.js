@@ -14,7 +14,6 @@ import PreSurveyForm from "./PreSurveyForm";
 
 function TextLLM() {
   const [preSurveyData, setPreSurveyData] = useState(null);
-  const [group, setGroup] = useState(null);
   const [step, setStep] = useState(0);
   const [questions, setQuestions] = useState([
     "If you flipped a coin, would you want heads or tails?",
@@ -40,24 +39,19 @@ function TextLLM() {
   const [saveHistory, setSaveHistory] = useState(false);
   const [nextQuestionButton, setNextQuestionButton] = useState(0); // State to show or not show "next question" button, (0=hidden, 1=showing, 2=clicked)
 
+  // Only set question data after preSurveyData is available
   useEffect(() => {
-    axios
-      .get("http://localhost:5001/assign")
-      .then((res) => {
-        setGroup(res.data.group);
-        setCurrentQuestion(questions[0]);
-      })
-      .catch((error) =>
-        console.error("Error fetching group assignment:", error)
-      );
-  }, [questions]);
+    if (preSurveyData) {
+      setCurrentQuestion(questions[0]);
+    }
+  }, [preSurveyData]);
 
   useEffect(() => {
-    if (group && currentQuestion && !initialized) {
+    if (currentQuestion && !initialized) {
       handleInteract(); // Trigger the initial LLM prompt (Step 0)
       setInitialized(true); // Prevent multiple triggers
     }
-  }, [group, currentQuestion, initialized]);
+  }, [currentQuestion, initialized]);
 
   // Effect to handle interaction after step change
   useEffect(() => {
@@ -273,71 +267,66 @@ function TextLLM() {
           className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col"
         >
           <Typography variant="h4" className="text-center mb-4">
-            LLM Study: {group ? "Text Interaction" : "Loading..."}
+            Text Interaction
           </Typography>
-
-          {group && (
-            <>
-              <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
-                {messages.map((msg, index) => (
-                  <Box key={index} mb={2} className="flex justify-between">
-                    {/* LLM message all the way to the left */}
-                    {msg.bot && (
-                      <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
-                        <Typography variant="body2">{msg.bot}</Typography>
-                      </Box>
-                    )}
-                    {/* User message all the way to the right */}
-                    {msg.user && (
-                      <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
-                        <Typography variant="body2">{msg.user}</Typography>
-                      </Box>
-                    )}
+          <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
+            {messages.map((msg, index) => (
+              <Box key={index} mb={2} className="flex justify-between">
+                {/* LLM message all the way to the left */}
+                {msg.bot && (
+                  <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
+                    <Typography variant="body2">{msg.bot}</Typography>
                   </Box>
-                ))}
-                {/* This div serves as the anchor for scrolling */}
-                <div ref={messagesEndRef} />
+                )}
+                {/* User message all the way to the right */}
+                {msg.user && (
+                  <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
+                    <Typography variant="body2">{msg.user}</Typography>
+                  </Box>
+                )}
               </Box>
-              {nextQuestionButton === 0 && !surveyCompleted && (
-                <Box display="flex" alignItems="center">
-                  <TextField
-                    label="Your response"
-                    variant="outlined"
-                    margin="normal"
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    error={error}
-                    helperText={error ? "Response can't be empty" : ""}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleNextStep();
-                      }
-                    }}
-                    sx={{ flexGrow: 1, mr: 1 }}
-                  />
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleNextStep}
-                  >
-                    Submit
-                  </Button>
-                </Box>
-              )}
-              {nextQuestionButton === 1 && (
-                <Box className="mt-4" display="flex">
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => setNextQuestionButton(2)}
-                    className="flex-grow"
-                  >
-                    Move to Next Question
-                  </Button>
-                </Box>
-              )}
-            </>
+            ))}
+            {/* This div serves as the anchor for scrolling */}
+            <div ref={messagesEndRef} />
+          </Box>
+          {nextQuestionButton === 0 && !surveyCompleted && (
+            <Box display="flex" alignItems="center">
+              <TextField
+                label="Your response"
+                variant="outlined"
+                margin="normal"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                error={error}
+                helperText={error ? "Response can't be empty" : ""}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleNextStep();
+                  }
+                }}
+                sx={{ flexGrow: 1, mr: 1 }}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleNextStep}
+              >
+                Submit
+              </Button>
+            </Box>
+          )}
+          {nextQuestionButton === 1 && (
+            <Box className="mt-4" display="flex">
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => setNextQuestionButton(2)}
+                className="flex-grow"
+              >
+                Move to Next Question
+              </Button>
+            </Box>
           )}
         </Paper>
       )}

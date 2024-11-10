@@ -20,7 +20,6 @@ const socket = io("http://localhost:5001");
 
 function TextLLM() {
   const [preSurveyData, setPreSurveyData] = useState(null);
-  const [group, setGroup] = useState(null);
   const [step, setStep] = useState(0);
   const [questions, setQuestions] = useState([
     "If you flipped a coin, would you want heads or tails?",
@@ -106,27 +105,19 @@ function TextLLM() {
     }
   }, [userInput]);
 
-  // Only fetch group and question data after preSurveyData is available
+  // Only set question data after preSurveyData is available
   useEffect(() => {
     if (preSurveyData) {
-      axios
-        .get("http://localhost:5001/assign")
-        .then((res) => {
-          setGroup(res.data.group);
-          setCurrentQuestion(questions[0]);
-        })
-        .catch((error) =>
-          console.error("Error fetching group assignment:", error)
-        );
+      setCurrentQuestion(questions[0]);
     }
-  }, [preSurveyData, questions]);
+  }, [preSurveyData]);
 
   useEffect(() => {
-    if (preSurveyData && group && currentQuestion && !initialized) {
+    if (preSurveyData && currentQuestion && !initialized) {
       handleInteract(); // Trigger the initial LLM prompt (Step 0)
       setInitialized(true); // Prevent multiple triggers
     }
-  }, [preSurveyData, group, currentQuestion, initialized]);
+  }, [preSurveyData, currentQuestion, initialized]);
 
   // Listen for audio stream from the backend
   useEffect(() => {
@@ -402,58 +393,53 @@ function TextLLM() {
           className="p-6 w-full max-w-screen-lg h-[90vh] flex flex-col"
         >
           <Typography variant="h4" className="text-center mb-4">
-            LLM Study: {group ? "Audio Interaction" : "Loading..."}
+            Audio Interaction
           </Typography>
-
-          {group && (
-            <>
-              <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
-                {messages.map((msg, index) => (
-                  <Box key={index} mb={2} className="flex justify-between">
-                    {/* LLM message all the way to the left */}
-                    {msg.bot && (
-                      <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
-                        <Typography variant="body2">{msg.bot}</Typography>
-                      </Box>
-                    )}
-                    {/* User message all the way to the right */}
-                    {msg.user && (
-                      <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
-                        <Typography variant="body2">{msg.user}</Typography>
-                      </Box>
-                    )}
+          <Box className="overflow-y-auto mt-4 border p-2 rounded-lg flex-1">
+            {messages.map((msg, index) => (
+              <Box key={index} mb={2} className="flex justify-between">
+                {/* LLM message all the way to the left */}
+                {msg.bot && (
+                  <Box className="max-w-[60%] bg-gray-300 text-black p-2 rounded-br-lg rounded-tr-lg rounded-bl-lg mb-2">
+                    <Typography variant="body2">{msg.bot}</Typography>
                   </Box>
-                ))}
-                {/* This div serves as the anchor for scrolling */}
-                <div ref={messagesEndRef} />
+                )}
+                {/* User message all the way to the right */}
+                {msg.user && (
+                  <Box className="max-w-[60%] bg-blue-500 text-white p-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-auto text-right">
+                    <Typography variant="body2">{msg.user}</Typography>
+                  </Box>
+                )}
               </Box>
-              {nextQuestionButton === 0 && !surveyCompleted && (
-                <Box display="flex" justifyContent="center" mt={2}>
-                  <IconButton
-                    onClick={toggleListening}
-                    color="primary"
-                    className="w-16 h-16"
-                    sx={{
-                      backgroundColor: isListening ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
-                    }}
-                  >
-                    {isListening ? <StopIcon fontSize="large" /> : <MicIcon fontSize="large" />}
-                  </IconButton>
-                </Box>
-              )}
-              {nextQuestionButton === 1 && (
-                <Box className="mt-4" display="flex">
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => setNextQuestionButton(2)}
-                    className="flex-grow"
-                  >
-                    Move to Next Question
-                  </Button>
-                </Box>
-              )}
-            </>
+            ))}
+            {/* This div serves as the anchor for scrolling */}
+            <div ref={messagesEndRef} />
+          </Box>
+          {nextQuestionButton === 0 && !surveyCompleted && (
+            <Box display="flex" justifyContent="center" mt={2}>
+              <IconButton
+                onClick={toggleListening}
+                color="primary"
+                className="w-16 h-16"
+                sx={{
+                  backgroundColor: isListening ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
+                }}
+              >
+                {isListening ? <StopIcon fontSize="large" /> : <MicIcon fontSize="large" />}
+              </IconButton>
+            </Box>
+          )}
+          {nextQuestionButton === 1 && (
+            <Box className="mt-4" display="flex">
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => setNextQuestionButton(2)}
+                className="flex-grow"
+              >
+                Move to Next Question
+              </Button>
+            </Box>
           )}
         </Paper>
       )}
