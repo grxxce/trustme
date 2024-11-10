@@ -3,11 +3,15 @@ from flask_cors import CORS
 import openai
 import os
 from dotenv import load_dotenv
+# Realtime API
+from flask_socketio import SocketIO, emit
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+# Create a socket for streaming audio for the AudioLLM
+socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=60)
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -151,23 +155,38 @@ def check_readiness_with_llm(user_input):
     return reply.lower() == "true"
 
 
-# Audio
-@app.route('/message', methods=['POST'])
-def message():
-    data = request.json
-    user_message = data.get('message')
-    
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a friendly assistant."},
-            {"role": "user", "content": user_message}
-        ]
-    )
+# Code for the Audio LLM
 
-    bot_reply = response.choices[0].message.content
-    return jsonify({'reply': bot_reply})
-# End Audio
+# Confirm that our socket is connected properly.
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+
+# Confirm that our socket is disconnected properly.
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+# This function is called upon whenever a user speaks to the LLM.
+# It is called via the socket by the `handleAudioMessage` function in AudioLLM.js.
+# It will then make a call to OpenAI to generate a response, which will then be used
+# to generate the audio output.
+# The audio output will then be streamed through the socket through `audio_stream` back into AudioLLM.js.
+@socketio.on('audio_message')
+def audio_message(message):
+    try:
+        audio_response = openai.audio.speech.create(
+            model="tts-1",
+            voice="alloy",
+            input=message
+        )
+
+        # Stream the audio to the client.
+        socketio.emit('audio_stream', {'audio': audio_response.content, 'text': message})
+    except Exception as e:
+        print(f"Error in handle_audio: {str(e)}")
+        emit('error', {'message': 'An error occurred processing your request'})
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
