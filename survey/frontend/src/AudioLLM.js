@@ -3,13 +3,15 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import {
   Button,
-  TextField,
   Typography,
   Paper,
   Box,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import MicIcon from "@mui/icons-material/Mic";
+import StopIcon from "@mui/icons-material/Stop";
 import { useNavigate } from "react-router-dom";
 import PreSurveyForm from "./PreSurveyForm";
 
@@ -36,17 +38,73 @@ function TextLLM() {
     reason: "",
     confidence: "",
   });
-  const [error, setError] = useState(false); // Error state for TextField
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   const [surveyCompleted, setSurveyCompleted] = useState(false);
   const [inConversation, setInConversation] = useState(false); // State to track Q&A conversation status
   const [saveHistory, setSaveHistory] = useState(false);
   const [nextQuestionButton, setNextQuestionButton] = useState(0); // State to show or not show "next question" button, (0=hidden, 1=showing, 2=clicked)
+
   // Audio variables
   const [audioPlaying, setAudioPlaying] = useState(false); // Audio play state
-  const [audioBuffer, setAudioBuffer] = useState(null); // Store audio buffer
   const audioRef = useRef(new Audio()); // Ref for Audio object
+
+  // Speech recognition variables
+  const [isListening, setIsListening] = useState(false); // State for whether the microphone is active
+  const [recognition, setRecognition] = useState(null); // Reference for SpeechRecognition object
+
+  // Initialize SpeechRecognition API
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.lang = "en-US";
+      recognitionInstance.continuous = false; // Stop after the first complete result
+      recognitionInstance.interimResults = false; // No interim results needed
+
+      recognitionInstance.onstart = () => {
+        setIsListening(true); // Set to listening when started
+      };
+
+      recognitionInstance.onresult = (event) => {
+        const speechToText = event.results[0][0].transcript;
+        setUserInput(speechToText); // Update user input with transcribed speech
+      };
+      
+      recognitionInstance.onend = () => {
+        setIsListening(false); // Set to not listening when recognition ends
+      };
+
+      recognitionInstance.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        setIsListening(false); // Stop listening on error
+      };
+
+      setRecognition(recognitionInstance); // Set the recognition instance
+    } else {
+      console.log("Speech Recognition is not supported in this browser.");
+    }
+  }, []);
+
+  // Handle microphone click
+  const toggleListening = () => {
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+    } else {
+      recognition.start();
+      setIsListening(true);
+    }
+  };
+
+  // Call handleNextStep only after userInput is done updating in speech recognition
+  useEffect(() => {
+    if (userInput.trim() !== "") {
+      handleNextStep();
+    }
+  }, [userInput]);
 
   // Only fetch group and question data after preSurveyData is available
   useEffect(() => {
@@ -103,7 +161,6 @@ function TextLLM() {
   
     // Clean up the audio URL after playback finishes
     audioRef.current.onended = () => {
-      console.log("done");
       setAudioPlaying(false);
       URL.revokeObjectURL(audioUrl);
     };
@@ -185,11 +242,9 @@ function TextLLM() {
 
   const handleNextStep = () => {
     if (!userInput.trim()) {
-      setError(true); // Set error state if input is empty
+      // if input is empty then do nothing
       return;
     }
-    // Clear the error when valid input is given
-    setError(false);
 
     // Store the user's input based on the current step
     if (step === 0) {
@@ -273,9 +328,7 @@ function TextLLM() {
       // Check if the response indicates readiness to proceed
       if (step === 3.5) {
         // Wait for the audio to finish playing before moving on
-        console.log('before audio');
         await awaitAudio();
-        console.log('after audio');
         const isReadyToMoveOn = botMessage.includes("Let's move on");
         const askingToMoveOn = botMessage.includes("are you ready");
         if (isReadyToMoveOn) {
@@ -375,30 +428,17 @@ function TextLLM() {
                 <div ref={messagesEndRef} />
               </Box>
               {nextQuestionButton === 0 && !surveyCompleted && (
-                <Box display="flex" alignItems="center">
-                  <TextField
-                    label="Your response"
-                    variant="outlined"
-                    margin="normal"
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    error={error}
-                    helperText={error ? "Response can't be empty" : ""}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleNextStep();
-                      }
-                    }}
-                    sx={{ flexGrow: 1, mr: 1 }}
-                  />
-                  <Button
-                    variant="contained"
+                <Box display="flex" justifyContent="center" mt={2}>
+                  <IconButton
+                    onClick={toggleListening}
                     color="primary"
-                    onClick={handleNextStep}
+                    className="w-16 h-16"
+                    sx={{
+                      backgroundColor: isListening ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
+                    }}
                   >
-                    Submit
-                  </Button>
+                    {isListening ? <StopIcon fontSize="large" /> : <MicIcon fontSize="large" />}
+                  </IconButton>
                 </Box>
               )}
               {nextQuestionButton === 1 && (
