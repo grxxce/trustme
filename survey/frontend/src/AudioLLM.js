@@ -71,7 +71,7 @@ function TextLLM() {
         const speechToText = event.results[0][0].transcript;
         setUserInput(speechToText); // Update user input with transcribed speech
       };
-      
+
       recognitionInstance.onend = () => {
         setIsListening(false); // Set to not listening when recognition ends
       };
@@ -127,7 +127,7 @@ function TextLLM() {
 
       setMessages((prevMessages) => [
         ...prevMessages.slice(0, -1),
-        { user: "", bot: botText }
+        { user: "", bot: botText },
       ]);
 
       playAudio(audioData); // Play the audio response
@@ -149,7 +149,7 @@ function TextLLM() {
     audioRef.current.src = audioUrl;
     audioRef.current.play();
     setAudioPlaying(true);
-  
+
     // Clean up the audio URL after playback finishes
     audioRef.current.onended = () => {
       setAudioPlaying(false);
@@ -167,7 +167,7 @@ function TextLLM() {
       resolveRef.current = null; // Clear the ref after resolution
     }
   }, [audioPlaying]);
-  
+
   // Can now force back to back messages to wait for previous message audio to finish
   const awaitAudio = () => {
     return new Promise((resolve) => {
@@ -315,7 +315,6 @@ function TextLLM() {
         return [...updatedMessages, { user: "", bot: botMessage }];
       });
 
-      
       // Check if the response indicates readiness to proceed
       if (step === 3.5) {
         // Wait for the audio to finish playing before moving on
@@ -422,10 +421,16 @@ function TextLLM() {
                 color="primary"
                 className="w-16 h-16"
                 sx={{
-                  backgroundColor: isListening ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
+                  backgroundColor: isListening
+                    ? "rgba(25, 118, 210, 0.1)"
+                    : "transparent",
                 }}
               >
-                {isListening ? <StopIcon fontSize="large" /> : <MicIcon fontSize="large" />}
+                {isListening ? (
+                  <StopIcon fontSize="large" />
+                ) : (
+                  <MicIcon fontSize="large" />
+                )}
               </IconButton>
             </Box>
           )}

@@ -3,6 +3,7 @@ from flask_cors import CORS
 import openai
 import os
 from dotenv import load_dotenv
+
 # Realtime API
 from flask_socketio import SocketIO, emit
 
@@ -151,36 +152,38 @@ def check_readiness_with_llm(user_input):
 
 # Code for the Audio LLM
 
+
 # Confirm that our socket is connected properly.
-@socketio.on('connect')
+@socketio.on("connect")
 def handle_connect():
-    print('Client connected')
+    print("Client connected")
 
 
 # Confirm that our socket is disconnected properly.
-@socketio.on('disconnect')
+@socketio.on("disconnect")
 def handle_disconnect():
-    print('Client disconnected')
+    print("Client disconnected")
 
-# This function is called upon whenever a user speaks to the LLM.
-# It is called via the socket by the `handleAudioMessage` function in AudioLLM.js.
-# It will then make a call to OpenAI to generate a response, which will then be used
-# to generate the audio output.
-# The audio output will then be streamed through the socket through `audio_stream` back into AudioLLM.js.
-@socketio.on('audio_message')
+
+# This function is called upon whenever a user speaks to the LLM
+# The LLM is told what to say via interact_with_llm
+# and the audio output of that result will then be streamed through
+# the socket through `audio_stream` back into AudioLLM.js
+@socketio.on("audio_message")
 def audio_message(message):
     try:
         audio_response = openai.audio.speech.create(
-            model="tts-1",
-            voice="alloy",
-            input=message
+            model="tts-1", voice="alloy", input=message
         )
 
         # Stream the audio to the client.
-        socketio.emit('audio_stream', {'audio': audio_response.content, 'text': message})
+        socketio.emit(
+            "audio_stream", {"audio": audio_response.content, "text": message}
+        )
     except Exception as e:
         print(f"Error in handle_audio: {str(e)}")
-        emit('error', {'message': 'An error occurred processing your request'})
+        emit("error", {"message": "An error occurred processing your request"})
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
