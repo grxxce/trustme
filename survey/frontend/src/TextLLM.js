@@ -217,6 +217,7 @@ function TextLLM() {
       "data:text/csv;charset=utf-8," +
       [
         `Exported at: ${currentTime}`,
+        `Modality: Text`,
         `Field(s) of Study: ${preSurveyData.major}`,
         `Familiarity with LLMs: ${preSurveyData.familiarity}`,
         ...fullHistory.map((msg) => {
