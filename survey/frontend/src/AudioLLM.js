@@ -8,6 +8,8 @@ import {
   Box,
   CircularProgress,
   IconButton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MicIcon from "@mui/icons-material/Mic";
@@ -18,7 +20,7 @@ import PreSurveyForm from "./PreSurveyForm";
 // Establish the WebSocket connection
 const socket = io("http://localhost:5001");
 
-function TextLLM() {
+function AudioLLM() {
   const [preSurveyData, setPreSurveyData] = useState(null);
   const [step, setStep] = useState(0);
   const [questions, setQuestions] = useState([
@@ -43,6 +45,7 @@ function TextLLM() {
   const [inConversation, setInConversation] = useState(false); // State to track Q&A conversation status
   const [saveHistory, setSaveHistory] = useState(false);
   const [nextQuestionButton, setNextQuestionButton] = useState(0); // State to show or not show "next question" button, (0=hidden, 1=showing, 2=clicked)
+  const [snackbarOpen, setSnackbarOpen] = useState(false); // State to manage Snackbar visibility
 
   // Audio variables
   const [audioPlaying, setAudioPlaying] = useState(false); // Audio play state
@@ -51,6 +54,7 @@ function TextLLM() {
   // Speech recognition variables
   const [isListening, setIsListening] = useState(false); // State for whether the microphone is active
   const [recognition, setRecognition] = useState(null); // Reference for SpeechRecognition object
+  const [isContinuousListening, setIsContinuousListening] = useState(true); // State to track continuous listening
 
   // Initialize SpeechRecognition API
   useEffect(() => {
@@ -60,7 +64,6 @@ function TextLLM() {
     if (SpeechRecognition) {
       const recognitionInstance = new SpeechRecognition();
       recognitionInstance.lang = "en-US";
-      recognitionInstance.continuous = false; // Stop after the first complete result
       recognitionInstance.interimResults = false; // No interim results needed
 
       recognitionInstance.onstart = () => {
@@ -68,12 +71,17 @@ function TextLLM() {
       };
 
       recognitionInstance.onresult = (event) => {
-        const speechToText = event.results[0][0].transcript;
+        const speechToText = event.results[event.results.length - 1][0].transcript;
         setUserInput(speechToText); // Update user input with transcribed speech
       };
 
       recognitionInstance.onend = () => {
         setIsListening(false); // Set to not listening when recognition ends
+        if (isContinuousListening) {
+          recognitionInstance.start(); // Restart recognition for continuous listening
+          setIsListening(true);
+          return;
+        }
       };
 
       recognitionInstance.onerror = (event) => {
@@ -85,13 +93,18 @@ function TextLLM() {
     } else {
       console.log("Speech Recognition is not supported in this browser.");
     }
-  }, []);
+  }, [isContinuousListening]);
 
   // Handle microphone click
   const toggleListening = () => {
     if (isListening) {
-      recognition.stop();
-      setIsListening(false);
+      if (isContinuousListening) {
+        // If in continuous listening mode, show Snackbar instead of stopping
+        setSnackbarOpen(true);
+      } else {
+        recognition.stop();
+        setIsListening(false);
+      }
     } else {
       recognition.start();
       setIsListening(true);
@@ -108,9 +121,16 @@ function TextLLM() {
   // Only set question data after preSurveyData is available
   useEffect(() => {
     if (preSurveyData) {
+      setIsContinuousListening(preSurveyData.continuousListening);
       setCurrentQuestion(questions[0]);
     }
   }, [preSurveyData]);
+
+  useEffect(() => {
+    if (recognition) {
+      recognition.continuous = isContinuousListening;
+    }
+  }, [isContinuousListening, recognition])
 
   useEffect(() => {
     if (preSurveyData && currentQuestion && !initialized) {
@@ -385,7 +405,7 @@ function TextLLM() {
         </Box>
       )}
       {!preSurveyData ? (
-        <PreSurveyForm onComplete={(data) => setPreSurveyData(data)} />
+        <PreSurveyForm onComplete={(data) => setPreSurveyData(data)} audio={true} />
       ) : (
         <Paper
           elevation={3}
@@ -452,8 +472,19 @@ function TextLLM() {
           )}
         </Paper>
       )}
+
+      {/* Snackbar Alert when trying to stop in continuous listening mode */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000} // Auto-hide after 3 seconds
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <Alert severity="info" onClose={() => setSnackbarOpen(false)}>
+          Continuous Listening Mode is active, stopping disabled.
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
 
-export default TextLLM;
+export default AudioLLM;

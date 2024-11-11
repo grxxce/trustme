@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, Typography } from "@mui/material";
+import { Box, TextField, Button, Typography, FormControlLabel, Switch } from "@mui/material";
 
-function PreSurveyForm({ onComplete }) {
+function PreSurveyForm({ onComplete, audio }) {
   const [major, setMajor] = useState("");
   const [familiarity, setFamiliarity] = useState("");
   const [errorMajor, setErrorMajor] = useState(false);
   const [errorFamiliarity, setErrorFamiliarity] = useState(false);
+  const [continuousListening, setContinuousListening] = useState(true); // State for toggle
 
   const handleSubmit = () => {
     const isFamiliarityValid =
@@ -25,7 +26,7 @@ function PreSurveyForm({ onComplete }) {
 
     // If both fields are valid, submit the form
     if (major.trim() && isFamiliarityValid) {
-      onComplete({ major, familiarity });
+      onComplete({ major, familiarity, continuousListening }); // Pass continuousListening state to parent
     }
   };
 
@@ -54,7 +55,7 @@ function PreSurveyForm({ onComplete }) {
         fullWidth
         margin="normal"
         label="If multiple, separate with commas"
-        onKeyDown={handleKeyDown} // Add onKeyDown event handler here
+        onKeyDown={handleKeyDown}
         error={errorMajor} // Highlight the field if there's an error
         helperText={errorMajor ? "This field is required." : ""} // Optional helper text
       />
@@ -71,10 +72,27 @@ function PreSurveyForm({ onComplete }) {
         fullWidth
         margin="normal"
         label="(1 = Not Familiar, 5 = Very Familiar)"
-        onKeyDown={handleKeyDown} // Add onKeyDown event handler here
-        error={errorFamiliarity} // Highlight the field if there's an error
-        helperText={errorFamiliarity ? "Must be a whole number between 1 and 5." : ""} // Optional helper text
+        onKeyDown={handleKeyDown}
+        error={errorFamiliarity}
+        helperText={errorFamiliarity ? "Must be a whole number between 1 and 5." : ""}
       />
+
+      {/* Conditionally render the continuous listening toggle */}
+      {audio && (
+        <Box className="mt-4">
+          <FormControlLabel
+            control={
+              <Switch
+                checked={continuousListening}
+                onChange={() => setContinuousListening(!continuousListening)}
+                name="continuousListening"
+                color="primary"
+              />
+            }
+            label="Enable Continuous Listening"
+          />
+        </Box>
+      )}
 
       <Box className="flex justify-left mt-4">
         <Button variant="contained" color="primary" onClick={handleSubmit}>
