@@ -421,9 +421,13 @@ function TextLLM() {
                 color="primary"
                 className="w-16 h-16"
                 sx={{
-                  backgroundColor: isListening
-                    ? "rgba(25, 118, 210, 0.1)"
-                    : "transparent",
+                  backgroundColor: isListening ? "rgba(25, 118, 210, 0.1)" : "transparent",
+                  animation: isListening ? "pulse 2s infinite" : "none",
+                  "@keyframes pulse": {
+                    "0%": { transform: "scale(1)", opacity: 1 },
+                    "50%": { transform: "scale(1.1)", opacity: 0.8 },
+                    "100%": { transform: "scale(1)", opacity: 1 },
+                  },
                 }}
               >
                 {isListening ? (
