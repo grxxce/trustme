@@ -50,6 +50,7 @@ function AudioLLM() {
   // Audio variables
   const [audioPlaying, setAudioPlaying] = useState(false); // Audio play state
   const audioRef = useRef(new Audio()); // Ref for Audio object
+  const audioPlayingRef = useRef(false);
 
   // Speech recognition variables
   const [isListening, setIsListening] = useState(false); // State for whether the microphone is active
@@ -71,9 +72,11 @@ function AudioLLM() {
       };
 
       recognitionInstance.onresult = (event) => {
-        const speechToText = event.results[event.results.length - 1][0].transcript;
-        setUserInput(speechToText); // Update user input with transcribed speech
-      };
+        if (!audioPlayingRef.current) { // Ignore user input while bot is talking
+          const speechToText = event.results[event.results.length - 1][0].transcript;
+          setUserInput(speechToText);
+        }
+      };      
 
       recognitionInstance.onend = () => {
         setIsListening(false); // Set to not listening when recognition ends
@@ -170,13 +173,14 @@ function AudioLLM() {
     audioRef.current.src = audioUrl;
     audioRef.current.play();
     setAudioPlaying(true);
-
-    // Clean up the audio URL after playback finishes
+    audioPlayingRef.current = true;
+  
     audioRef.current.onended = () => {
       setAudioPlaying(false);
+      audioPlayingRef.current = false;
       URL.revokeObjectURL(audioUrl);
     };
-  };
+  };  
 
   // Create a ref to store the resolve function
   const resolveRef = useRef(null);
