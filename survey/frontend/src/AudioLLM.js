@@ -145,10 +145,11 @@ function AudioLLM() {
       const audioData = data.audio;
       const botText = data.text;
 
-      setMessages((prevMessages) => [
-        ...prevMessages.slice(0, -1),
-        { user: "", bot: botText },
-      ]);
+      // Update the latest message with the bot's response
+      setMessages((prevMessages) => {
+        const updatedMessages = prevMessages.slice(0, -1); // Remove loading message
+        return [...updatedMessages, { user: "", bot: botText }];
+      });
 
       playAudio(audioData); // Play the audio response
     });
@@ -329,12 +330,6 @@ function AudioLLM() {
       const botMessage = res.data.reply;
       socket.emit("audio_message", botMessage); // Send the bot message for audio
 
-      // Update the latest message with the bot's response
-      setMessages((prevMessages) => {
-        const updatedMessages = prevMessages.slice(0, -1); // Remove loading message
-        return [...updatedMessages, { user: "", bot: botMessage }];
-      });
-
       // Check if the response indicates readiness to proceed
       if (step === 3.5) {
         // Wait for the audio to finish playing before moving on
@@ -362,6 +357,7 @@ function AudioLLM() {
       "data:text/csv;charset=utf-8," +
       [
         `Exported at: ${currentTime}`,
+        `Modality: Audio`,
         `Field(s) of Study: ${preSurveyData.major}`,
         `Familiarity with LLMs: ${preSurveyData.familiarity}`,
         ...fullHistory.map((msg) => {
