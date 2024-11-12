@@ -54,7 +54,7 @@ function AudioLLM() {
   // Speech recognition variables
   const [isListening, setIsListening] = useState(false); // State for whether the microphone is active
   const [recognition, setRecognition] = useState(null); // Reference for SpeechRecognition object
-  const [isContinuousListening, setIsContinuousListening] = useState(true); // State to track continuous listening
+  const isContinuousListening = useRef(true);
 
   // Initialize SpeechRecognition API
   useEffect(() => {
@@ -71,10 +71,10 @@ function AudioLLM() {
       };
 
       recognitionInstance.onresult = (event) => {
-        if (!audioPlayingRef.current) { // Ignore user input while bot is talking
+        if (!audioPlayingRef.current) {
           const speechToText = event.results[event.results.length - 1][0].transcript;
           setUserInput(speechToText);
-        } else {
+        } else { // Ignore user input while bot is talking
           setSnackbarText("Speech ignored while audio is still playing")
           setSnackbarOpen(true);
         }
@@ -82,10 +82,11 @@ function AudioLLM() {
 
       recognitionInstance.onend = () => {
         setIsListening(false); // Set to not listening when recognition ends
-        if (isContinuousListening) {
+        if (isContinuousListening.current) {
           recognitionInstance.start(); // Restart recognition for continuous listening
           setIsListening(true);
-          return;
+        } else {
+          recognitionInstance.stop();
         }
       };
 
@@ -98,12 +99,12 @@ function AudioLLM() {
     } else {
       console.log("Speech Recognition is not supported in this browser.");
     }
-  }, [isContinuousListening]);
+  }, []);
 
   // Handle microphone click
   const toggleListening = () => {
     if (isListening) {
-      if (isContinuousListening) {
+      if (isContinuousListening.current) {
         // If in continuous listening mode, show Snackbar instead of stopping
         setSnackbarText("Continuous Listening Mode is active, stopping disabled");
         setSnackbarOpen(true);
@@ -127,16 +128,16 @@ function AudioLLM() {
   // Only set question data after preSurveyData is available
   useEffect(() => {
     if (preSurveyData) {
-      setIsContinuousListening(preSurveyData.continuousListening);
+      isContinuousListening.current = preSurveyData.continuousListening;
       setCurrentQuestion(questions[0]);
     }
   }, [preSurveyData]);
 
   useEffect(() => {
     if (recognition) {
-      recognition.continuous = isContinuousListening;
+      recognition.continuous = isContinuousListening.current;
     }
-  }, [isContinuousListening, recognition])
+  }, [recognition])
 
   useEffect(() => {
     if (preSurveyData && currentQuestion && !initialized) {
@@ -318,6 +319,9 @@ function AudioLLM() {
         { user: "", bot: "Thank you for participating!" },
       ]);
       setSurveyCompleted(true);
+      // stop listening when survey is complete
+      isContinuousListening.current = false;
+      recognition.stop();
     }
   };
 
