@@ -14,7 +14,6 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MicIcon from "@mui/icons-material/Mic";
 import StopIcon from "@mui/icons-material/Stop";
-import { useNavigate } from "react-router-dom";
 import PreSurveyForm from "./PreSurveyForm";
 
 // Establish the WebSocket connection
@@ -40,7 +39,6 @@ function AudioLLM() {
     confidence: "",
   });
   const messagesEndRef = useRef(null);
-  const navigate = useNavigate();
   const [surveyCompleted, setSurveyCompleted] = useState(false);
   const [inConversation, setInConversation] = useState(false); // State to track Q&A conversation status
   const [saveHistory, setSaveHistory] = useState(false);
@@ -394,7 +392,7 @@ function AudioLLM() {
         <Button
           variant="text"
           color="primary"
-          onClick={() => navigate("/")}
+          onClick={() => window.location.href = "/"}
           startIcon={<ArrowBackIcon />}
         >
           Back to Home
