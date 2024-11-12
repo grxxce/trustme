@@ -46,6 +46,7 @@ function AudioLLM() {
   const [saveHistory, setSaveHistory] = useState(false);
   const [nextQuestionButton, setNextQuestionButton] = useState(0); // State to show or not show "next question" button, (0=hidden, 1=showing, 2=clicked)
   const [snackbarOpen, setSnackbarOpen] = useState(false); // State to manage Snackbar visibility
+  const [snackbarText, setSnackbarText] = useState("")
 
   // Audio variables
   const [audioPlaying, setAudioPlaying] = useState(false); // Audio play state
@@ -75,6 +76,9 @@ function AudioLLM() {
         if (!audioPlayingRef.current) { // Ignore user input while bot is talking
           const speechToText = event.results[event.results.length - 1][0].transcript;
           setUserInput(speechToText);
+        } else {
+          setSnackbarText("Speech ignored while audio is still playing")
+          setSnackbarOpen(true);
         }
       };      
 
@@ -103,6 +107,7 @@ function AudioLLM() {
     if (isListening) {
       if (isContinuousListening) {
         // If in continuous listening mode, show Snackbar instead of stopping
+        setSnackbarText("Continuous Listening Mode is active, stopping disabled");
         setSnackbarOpen(true);
       } else {
         recognition.stop();
@@ -210,6 +215,7 @@ function AudioLLM() {
           await awaitAudio();
           setLatestUserInput(userInput);
           setStep(3.5); // Move to step 3.5 after step 3, chance for clarifying questions
+          audioPlayingRef.current = true; // helps ignore user input in between back-to-back bot outputs
         }
       }
     };
@@ -225,6 +231,7 @@ function AudioLLM() {
         (initialized && inConversation) ||
         (step === 3.5 && latestUserInput === "")
       ) {
+        audioPlayingRef.current = true; // helps ignore user input in between back-to-back bot outputs
         await handleInteract(); // Wait for handleInteract to complete
         setInConversation(false);
       }
@@ -480,7 +487,7 @@ function AudioLLM() {
         onClose={() => setSnackbarOpen(false)}
       >
         <Alert severity="info" onClose={() => setSnackbarOpen(false)}>
-          Continuous Listening Mode is active, stopping disabled.
+          {snackbarText}
         </Alert>
       </Snackbar>
     </div>
