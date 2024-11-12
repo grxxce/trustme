@@ -15,6 +15,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MicIcon from "@mui/icons-material/Mic";
 import StopIcon from "@mui/icons-material/Stop";
 import PreSurveyForm from "./PreSurveyForm";
+import { questionList } from "./questions";
 
 // Establish the WebSocket connection
 const socket = io("http://localhost:5001");
@@ -22,11 +23,7 @@ const socket = io("http://localhost:5001");
 function AudioLLM() {
   const [preSurveyData, setPreSurveyData] = useState(null);
   const [step, setStep] = useState(0);
-  const [questions, setQuestions] = useState([
-    "If you flipped a coin, would you want heads or tails?",
-    "If you were playing a game, would you pick the circle or the square piece?",
-    "A close friend asks for your opinion on their recent change in appearance, but you don't think it's good. Would you be fully honest or lie to protect their feelings?",
-  ]);
+  const [questions, setQuestions] = useState(questionList);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [userInput, setUserInput] = useState("");
   const [latestUserInput, setLatestUserInput] = useState("");
