@@ -130,11 +130,17 @@ function AudioLLM() {
     }
   }, [preSurveyData]);
 
+  // after preSurveyData done and speech recognition initialized,
+  // auto start listening if in continuous listening mode
   useEffect(() => {
-    if (recognition) {
+    if (recognition && preSurveyData && !isListening) {
       recognition.continuous = isContinuousListening.current;
+      if (isContinuousListening.current) {
+        recognition.start();
+        setIsListening(true);
+      }
     }
-  }, [recognition])
+  }, [recognition, preSurveyData])
 
   useEffect(() => {
     if (preSurveyData && currentQuestion && !initialized) {
@@ -211,7 +217,6 @@ function AudioLLM() {
           await awaitAudio();
           setLatestUserInput(userInput);
           setStep(3.5); // Move to step 3.5 after step 3, chance for clarifying questions
-          audioPlayingRef.current = true; // helps ignore user input in between back-to-back bot outputs
         }
       }
     };
@@ -227,7 +232,6 @@ function AudioLLM() {
         (initialized && inConversation) ||
         (step === 3.5 && latestUserInput === "")
       ) {
-        audioPlayingRef.current = true; // helps ignore user input in between back-to-back bot outputs
         await handleInteract(); // Wait for handleInteract to complete
         setInConversation(false);
       }
@@ -323,6 +327,8 @@ function AudioLLM() {
   };
 
   const handleInteract = async () => {
+    audioPlayingRef.current = true; // Ignore user input while audio from chatbot loading
+
     const payload = {
       question: currentQuestion,
       step: step,
