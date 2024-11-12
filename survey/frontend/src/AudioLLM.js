@@ -81,11 +81,11 @@ function AudioLLM() {
       };      
 
       recognitionInstance.onend = () => {
-        setIsListening(false); // Set to not listening when recognition ends
-        if (isContinuousListening.current) {
-          recognitionInstance.start(); // Restart recognition for continuous listening
+        if (isContinuousListening.current) { // Continue recognition for continuous listening
+          recognitionInstance.start();
           setIsListening(true);
-        } else {
+        } else { // Detect end of speech on discrete mode
+          setIsListening(false);
           recognitionInstance.stop();
         }
       };
