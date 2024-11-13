@@ -33,6 +33,7 @@ function TextLLM() {
   const [inConversation, setInConversation] = useState(false); // State to track Q&A conversation status
   const [saveHistory, setSaveHistory] = useState(false);
   const [nextQuestionButton, setNextQuestionButton] = useState(0); // State to show or not show "next question" button, (0=hidden, 1=showing, 2=clicked)
+  const repeatStep0 = useRef(false); // flag to allow repeating step 0 if user doesn't pick one of the binary options
 
   // Only set question data after preSurveyData is available
   useEffect(() => {
@@ -51,7 +52,7 @@ function TextLLM() {
   // Effect to handle interaction after step change
   useEffect(() => {
     const interactAndUpdateStep = async () => {
-      if (initialized) {
+      if (initialized && !repeatStep0.current) {
         await handleInteract(); // Wait for handleInteract to complete
         if (step === 3) {
           setLatestUserInput(userInput);
@@ -113,6 +114,7 @@ function TextLLM() {
     // Store the user's input based on the current step
     if (step === 0) {
       setContext({ ...context, choice: userInput });
+      repeatStep0.current = false;
     } else if (step === 1) {
       setContext({ ...context, reason: userInput });
     } else if (step === 2) {
@@ -188,6 +190,16 @@ function TextLLM() {
         const updatedMessages = prevMessages.slice(0, -1); // Remove loading message
         return [...updatedMessages, { user: "", bot: botMessage }];
       });
+
+      // Check is response actually picked one of the binary options or not
+      // If not, then repeat the question at step 0
+      if (step === 1) {
+        const isNotBinary = botMessage.includes("explicitly pick");
+        if (isNotBinary) {
+          repeatStep0.current = true;
+          setStep(0);
+        }
+      }
 
       // Check if the response indicates readiness to proceed
       if (step === 3.5) {
