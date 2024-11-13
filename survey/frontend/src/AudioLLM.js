@@ -41,7 +41,8 @@ function AudioLLM() {
   const [saveHistory, setSaveHistory] = useState(false);
   const [nextQuestionButton, setNextQuestionButton] = useState(0); // State to show or not show "next question" button, (0=hidden, 1=showing, 2=clicked)
   const [snackbarOpen, setSnackbarOpen] = useState(false); // State to manage Snackbar visibility
-  const [snackbarText, setSnackbarText] = useState("")
+  const [snackbarText, setSnackbarText] = useState("");
+  const repeatStep0 = useRef(false); // flag to allow repeating step 0 if user doesn't pick one of the binary options
 
   // Audio variables
   const [audioPlaying, setAudioPlaying] = useState(false); // Audio play state
@@ -210,7 +211,7 @@ function AudioLLM() {
   // Effect to handle interaction after step change
   useEffect(() => {
     const interactAndUpdateStep = async () => {
-      if (initialized) {
+      if (initialized && !repeatStep0.current) {
         await handleInteract(); // Wait for handleInteract to complete
         if (step === 3) {
           // Wait for the audio to finish playing before moving on
@@ -272,6 +273,7 @@ function AudioLLM() {
     // Store the user's input based on the current step
     if (step === 0) {
       setContext({ ...context, choice: userInput });
+      repeatStep0.current = false;
     } else if (step === 1) {
       setContext({ ...context, reason: userInput });
     } else if (step === 2) {
@@ -345,6 +347,16 @@ function AudioLLM() {
       const res = await axios.post("http://localhost:5001/interact", payload);
       const botMessage = res.data.reply;
       socket.emit("audio_message", botMessage); // Send the bot message for audio
+
+      // Check is response actually picked one of the binary options or not
+      // If not, then repeat the question at step 0
+      if (step === 1) {
+        const isNotBinary = botMessage.includes("explicitly pick");
+        if (isNotBinary) {
+          repeatStep0.current = true;
+          setStep(0);
+        }
+      }
 
       // Check if the response indicates readiness to proceed
       if (step === 3.5) {

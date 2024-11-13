@@ -41,7 +41,10 @@ def interact_with_llm(question, step, user_input, context=None):
     if step == 0:
         prompt = f"Ask the user this exact question: {question}."
     elif step == 1:
-        prompt = f"Ask the user exactly this: Why do you choose that?"
+        if check_is_binary_response(user_input, question):
+            prompt = f"Ask the user exactly this: Why do you choose that?"
+        else:
+            prompt = f"Ask the user exactly this: I'm sorry, but for the purpose of this conversation please try to explicity pick one of the options. I'll ask the question again: {question}"
     elif step == 2:
         prompt = f"Ask the user exactly this: How confident are you in your choice on a scale from 1 to 5?"
     elif step == 3:
@@ -149,6 +152,21 @@ def check_readiness_with_llm(user_input):
     reply = completion.choices[0].message.content.strip()
     return reply.lower() == "true"
 
+def check_is_binary_response(user_input, question):
+    prompt = f"Given the following question: '{question}'\n Does the following response indicate the user has actually picked one of the two options presented by the quesiton? Reply with only 'True' or 'False'.\nResponse: '{user_input}'"
+
+    completion = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": "You determine if the user has actually picked an option from a given question.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+    )
+    reply = completion.choices[0].message.content.strip()
+    return reply.lower() == "true"
 
 # Code for the Audio LLM
 
