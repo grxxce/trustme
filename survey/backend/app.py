@@ -153,14 +153,14 @@ def check_readiness_with_llm(user_input):
     return reply.lower() == "true"
 
 def check_is_binary_response(user_input, question):
-    prompt = f"Given the following question: '{question}'\n Does the following response indicate the user has actually picked one of the two options presented by the quesiton? Reply with only 'True' or 'False'.\nResponse: '{user_input}'"
+    prompt = f"Given the following question: '{question}'\n Does the following response indicate the user has picked one of the question's options? Reply with only 'True' or 'False'.\nResponse: '{user_input}'"
 
     completion = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {
                 "role": "system",
-                "content": "You determine if the user has actually picked an option from a given question.",
+                "content": "You determine whether the user has picked an option from a given question.",
             },
             {"role": "user", "content": prompt},
         ],
