@@ -183,7 +183,7 @@ function TextLLM() {
       const res = await axios.post("http://localhost:5001/interact", payload);
       const botMessage = res.data.reply;
       const isReadyToMoveOn = botMessage.includes("Let's move on");
-      const askingToMoveOn = botMessage.includes("are you ready");
+      const askingToMoveOn = botMessage.includes("do you want to move on");
 
       // Update the latest message with the bot's response
       setMessages((prevMessages) => {

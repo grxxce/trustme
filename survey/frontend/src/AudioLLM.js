@@ -363,7 +363,7 @@ function AudioLLM() {
         // Wait for the audio to finish playing before moving on
         await awaitAudio();
         const isReadyToMoveOn = botMessage.includes("Let's move on");
-        const askingToMoveOn = botMessage.includes("are you ready");
+        const askingToMoveOn = botMessage.includes("do you want to move on");
         if (isReadyToMoveOn) {
           setStep(4);
         } else if (!askingToMoveOn) {
