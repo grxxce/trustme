@@ -102,7 +102,7 @@ def interact_with_llm(question, step, user_input, context=None):
 
         return clarification_answer
     elif step == 4:
-        prompt = f"Ask the user exactly this: With that said, please answer the question again: '{question}'."
+        prompt = f"Ask the user exactly this: Given our conversation, what do you think now about the question: '{question}'."
     elif step == 5:
         prompt = f"Ask the user exactly this: Why do you choose that?"
     elif step == 6:
