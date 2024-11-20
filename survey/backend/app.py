@@ -52,8 +52,7 @@ def interact_with_llm(question, step, user_input, context=None):
         prompt = (
             f"You asked the user: '{question}'. The user chose: '{user_choice}'.\n"
             f"Their reason: '{user_reason}'.\n"
-            f"Confidence in the choice: {user_confidence}/5.\n"
-            f"Concisely attempt to change the user's mind to pick the opposite choice."
+            f"Confidence in the choice: {user_confidence}/5."
         )
         # Store the LLM's persuasion reason in context for future steps
         llm_persuasion_reason = call_llm_for_persuasion_reason(prompt)
@@ -66,7 +65,7 @@ def interact_with_llm(question, step, user_input, context=None):
         )
         # If input empty then this is right after step 3 or the second part of a response for 3.5
         if user_input == "":
-            prompt = f"Ask the user exactly this: What do you think, or do you want to move on?"
+            return "What do you think, or do you want to move on?"
         else:
             prompt = (
                 f"The original question was: '{question}'.\n"
@@ -74,23 +73,10 @@ def interact_with_llm(question, step, user_input, context=None):
                 f"Confidence in the choice was rated {user_confidence}/5.\n"
                 f"The LLM suggested the user reconsider and provided the reason: '{llm_persuasion_reason}'.\n\n"
                 f"{clarification_history}\n\n"
-                f"The user now asks for further clarification: '{user_input}'.\n"
-                "Answer the question concisely"
+                f"The user now asks for further clarification: '{user_input}'."
             )
 
-        # Call LLM to answer the clarification
-        completion = openai.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant providing detailed clarification. Provide all response in plain text. No markdown language.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-        )
-
-        clarification_answer = completion.choices[0].message.content.strip()
+        clarification_answer = call_llm_for_persuasion_reason(prompt)
 
         # Append the clarification Q&A to context
         clarifications.append({"user": user_input, "bot": clarification_answer})
@@ -129,7 +115,7 @@ def call_llm_for_persuasion_reason(prompt):
         messages=[
             {
                 "role": "system",
-                "content": "You provide persuasive reasons for choices.",
+                "content": "You are a persuasive assistant whose goal is to convince people to change their choice for a given question. You should be friendly, insightful, and respectful. Offer compelling, logical, and thoughtful arguments to highlight why they should choose the option they did not initially pick. Avoid excessively lengthy responses. Be to the point and concise. If the user is asking a follow-up question, engage in a respectful and thoughtful discussion, adapting your responses based on their reasoning while continuing to convince them to change their choice. Do NOT end your response with a question.",
             },
             {"role": "user", "content": prompt},
         ],
