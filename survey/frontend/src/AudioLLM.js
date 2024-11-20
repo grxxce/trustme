@@ -62,21 +62,39 @@ function AudioLLM() {
     if (SpeechRecognition) {
       const recognitionInstance = new SpeechRecognition();
       recognitionInstance.lang = "en-US";
-      recognitionInstance.interimResults = false; // No interim results needed
 
       recognitionInstance.onstart = () => {
         setIsListening(true); // Set to listening when started
       };
 
+      let silenceTimer; // Timer for detecting when the user stops speaking
+      const SILENCE_DELAY = 1500; // 1.5 seconds of silence to consider speech complete
+
       recognitionInstance.onresult = (event) => {
         if (!audioPlayingRef.current) {
-          const speechToText = event.results[event.results.length - 1][0].transcript;
-          setUserInput(speechToText);
+          // Combine results into a full transcript
+          const results = Array.from(event.results);
+          const speechToText = results
+            .map((result) => result[0].transcript)
+            .join(" ");
+
+          // Clear previous silence timer if user continues speaking
+          if (silenceTimer) {
+            clearTimeout(silenceTimer);
+          }
+
+          // Start a new timer to finalize input after silence
+          silenceTimer = setTimeout(() => {
+            setUserInput(speechToText); // Only set when speaking is done
+            clearTimeout(silenceTimer); // Clear timer reference
+            recognitionInstance.abort();
+          }, SILENCE_DELAY);
         } else { // Ignore user input while bot is talking
-          setSnackbarText("Speech ignored while audio is still playing")
+          setSnackbarText("Speech ignored while audio is still playing");
           setSnackbarOpen(true);
+          recognitionInstance.abort();
         }
-      };      
+      };
 
       recognitionInstance.onend = () => {
         if (isContinuousListening.current) { // Continue recognition for continuous listening
@@ -136,6 +154,7 @@ function AudioLLM() {
   useEffect(() => {
     if (recognition && preSurveyData && !isListening) {
       recognition.continuous = isContinuousListening.current;
+      recognition.interimResults = isContinuousListening.current;
       if (isContinuousListening.current) {
         recognition.start();
         setIsListening(true);
