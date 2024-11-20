@@ -50,9 +50,11 @@ def interact_with_llm(question, step, user_input, context=None):
         prompt = f"Ask the user exactly this: How confident are you in your choice on a scale from 1 to 5?"
     elif step == 3:
         prompt = (
-            f"You asked the user: '{question}'. The user chose: '{user_choice}'.\n"
+            f"You asked the user: '{question}'.\n"
+            f"The user chose: '{user_choice}'.\n"
             f"Their reason: '{user_reason}'.\n"
-            f"Confidence in the choice: {user_confidence}/5."
+            f"Their confidence in the choice: {user_confidence}/5.\n"
+            f"Persuade the user to NOT choose '{user_choice}' and instead pick the other option from the question."
         )
         # Store the LLM's persuasion reason in context for future steps
         llm_persuasion_reason = call_llm_for_persuasion_reason(prompt)
@@ -70,6 +72,7 @@ def interact_with_llm(question, step, user_input, context=None):
             prompt = (
                 f"The original question was: '{question}'.\n"
                 f"The user initially chose: '{user_choice}' and gave the reason: '{user_reason}'.\n"
+                f"You want the user to NOT choose '{user_choice}' and instead pick the other option from the question."
                 f"Confidence in the choice was rated {user_confidence}/5.\n"
                 f"The LLM suggested the user reconsider and provided the reason: '{llm_persuasion_reason}'.\n\n"
                 f"{clarification_history}\n\n"
