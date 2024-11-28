@@ -1,50 +1,50 @@
-Participant Number,Modality,Field of Study,Experience with LLMs,Date Interviewed,Q1 Starting Choice,Q1 Starting Confidence,Q1 Final Choice,Q1 Final Confidence,Q1 Flipped Choice?,Q1 Delta,Q2 Starting Choice,Q2 Starting Confidence,Q2 Final Choice,Q2 Final Confidence,Q2 Flipped Choice?,Q2 Delta,Q3 Starting Choice,Q3 Starting Confidence,Q3 Final Choice,Q3 Final Confidence,Q3 Flipped Choice?,Q3 Delta,Clean Data?
-P1,Text,CS,4,11/21/2024,Never wait in line,5,Never wait in line,5,FALSE,0,"100,000 ten years",5,Million today,5,TRUE,0,Pause,3,Pause,3,FALSE,0,FALSE
-P2,Text,CS,4,11/21/2024,Never wait in line,4,Never wait in line,4,FALSE,0,"100,000 ten years",3,Million today,4,TRUE,-1,Rewind,5,Rewind,5,FALSE,0,TRUE
-P3,Audio,CS,5,11/21/2024,Never wait in line,4,Never do chores,3,TRUE,1,"100,000 ten years",2,Million today,2,TRUE,0,Pause,3,Pause,2,FALSE,1,TRUE
-P4,Audio,CS,5,11/21/2024,Never do chores,4,Never do chores,3,FALSE,1,"100,000 ten years",4,Million today,4,TRUE,0,Pause,4,Pause,4,FALSE,0,TRUE
-P5,Text,CS,5,11/21/2024,Never wait in line,4,Never wait in line,4,FALSE,0,Million today,5,Million today,5,FALSE,0,Rewind,5,Pause,2,TRUE,3,TRUE
-P6,Audio,"Econ, CS",3,11/21/2024,Never do chores,3.5,Never do chores,3,FALSE,0.5,"100,000 ten years",4,"100,000 ten years",4,FALSE,0,Rewind,5,Rewind,4,FALSE,1,TRUE
-P7,Text,"Comparative Literature, Education",4,11/22/2024,Never wait in line,5,Never wait in line,5,FALSE,0,Million today,5,Million today,5,FALSE,0,Pause,4,Pause,5,FALSE,-1,TRUE
-P8,Text,CS,4,11/25/2024,Never wait in line,4,Never do chores,4,TRUE,0,Million today,5,Million today,5,FALSE,0,Rewind,3,Pause,4,TRUE,-1,TRUE
-P9,Text,Psychology,2,11/25/2024,Never do chores,5,Never do chores,5,FALSE,0,Million today,4,"100,000 ten years",4,TRUE,0,Rewind,4,Rewind,5,FALSE,-1,TRUE
-P10,Text,Neuro,4,11/25/2024,Never do chores,5,Never do chores,5,FALSE,0,"100,000 ten years",5,"100,000 ten years",5,FALSE,0,Pause,3,Rewind,5,TRUE,-2,FALSE
-P11,Text,"Econ, Public Health",2,11/25/2024,Never wait in line,4,Never do chores,3,TRUE,1,"100,000 ten years",4,"100,000 ten years",4,FALSE,0,Rewind,5,Rewind,5,FALSE,0,TRUE
-P12,Text,Applied Math,3,11/25/2024,Never do chores,4,Never do chores,4,FALSE,0,"100,000 ten years",5,Million today,2,TRUE,3,Pause,2,Pause,2,FALSE,0,TRUE
-P13,Text,Neuro,2,11/25/2024,Never wait in line,5,Never wait in line,5,FALSE,0,Million today,4,Million today,5,FALSE,-1,Pause,4,Rewind,4,TRUE,0,TRUE
-P14,Text,"Math, CS",3,11/25/2024,Never wait in line,2,Never wait in line,,FALSE,2,Million today,5,Million today,5,FALSE,0,Pause,3,Pause,2,FALSE,1,FALSE
-P15,Text,"MCB, CS",4,11/25/2024,Never wait in line,3,Never wait in line,4,FALSE,-1,Million today,3,"100,000 ten years",3,TRUE,0,Pause,5,Pause,5,FALSE,0,FALSE
-P16,Text,OEB,4,11/25/2024,Never do chores,3,Never do chores,5,FALSE,-2,Million today,5,Million today,5,FALSE,0,Rewind,5,Rewind,5,FALSE,0,TRUE
-P17,Text,"Gov, History",2,11/25/2024,Never wait in line,4,Never wait in line,5,FALSE,-1,Million today,5,Million today,5,FALSE,0,Rewind,5,Rewind,5,FALSE,0,TRUE
-P18,Text,CS,4,11/25/2024,Never wait in line,5,Never wait in line,5,FALSE,0,"100,000 ten years",5,Million today,5,TRUE,0,Pause,5,Pause,5,FALSE,0,TRUE
-P19,Text,"Econ, EEPP",4,11/25/2024,Never wait in line,3,Never do chores,4,TRUE,-1,Million today,5,Million today,5,FALSE,0,Rewind,4,Rewind,4,FALSE,0,TRUE
-P20,Text,"EE, CS",4,11/21/2024,Never wait in line,4,Never wait in line,4,FALSE,0,Million today,4,Million today,4,FALSE,0,Rewind,3,Pause,3,TRUE,0,TRUE
-P21,Audio,AFVS,3,11/21/2024,Never wait in line,4,Never wait in line,4,FALSE,0,Million today,4,Million today,4,FALSE,0,Pause,5,Pause,5,FALSE,0,TRUE
-P22,Audio,CS,4,11/22/2024,Never wait in line,5,Never wait in line,5,FALSE,0,"100,000 ten years",2,Million today,5,TRUE,-3,Rewind,5,Rewind,4,FALSE,1,TRUE
-P23,Audio,Math,3,11/22/2024,Never wait in line,4,Never wait in line,3,FALSE,1,Million today,3,"100,000 ten years",3,TRUE,0,Rewind,4,Rewind,4,FALSE,0,TRUE
-P24,Text,"CS, Gov",5,11/22/2024,Never do chores,5,Never do chores,5,FALSE,0,Million today,3.5,Million today,4,FALSE,-0.5,Pause,2,Pause,3,FALSE,-1,TRUE
-P25,Text,CS,5,11/22/2024,Never wait in line,5,Never wait in line,5,FALSE,0,Million today,5,Million today,5,FALSE,0,Rewind,5,Rewind,5,FALSE,0,TRUE
-P26,Audio,EE,4,11/24/2024,Never wait in line,5,Never wait in line,5,FALSE,0,Million today,5,Million today,5,FALSE,0,Pause,4,Pause,5,FALSE,-1,TRUE
-P27,Audio,CSE,5,11/24/2024,Never do chores,3,Never do chores,2,FALSE,1,Million today,5,Million today,5,FALSE,0,Pause,2,Rewind,3,TRUE,-1,TRUE
-P28,Audio,CS,4,11/24/2024,Never wait in line,3,Never wait in line,4,FALSE,-1,Million today,4,Million today,5,FALSE,-1,Rewind,5,Rewind,5,FALSE,0,FALSE
-P29,Audio,AM,4,11/24/2024,Never wait in line,3,Never do chores,3.5,TRUE,-0.5,"100,000 ten years",4,Million today,4,TRUE,0,Pause,4,Pause,4,FALSE,0,TRUE
-P30,Audio,CS,4,11/24/2024,Never wait in line,4,Never wait in line,3,FALSE,1,Million today,5,Million today,5,FALSE,0,Pause,3,Rewind,4,TRUE,-1,TRUE
-P31,Audio,"CS, Neuro",4,11/24/2024,Never do chores,3.5,Never do chores,4,FALSE,-0.5,"100,000 ten years",5,"100,000 ten years",4.5,FALSE,0.5,Pause,3,Pause,3.5,FALSE,-0.5,TRUE
-P32,Audio,Biology,2,11/24/2024,Never do chores,4,Never wait in line,5,TRUE,-1,Million today,5,Million today,4,FALSE,1,Rewind,5,Rewind,5,FALSE,0,TRUE
-P33,Audio,History,1,11/25/2024,Never wait in line,5,Never wait in line,5,FALSE,0,"100,000 ten years",5,Million today,4,TRUE,1,Rewind,5,Rewind,5,FALSE,0,TRUE
-P34,Audio,CS,5,11/25/2024,Never wait in line,2.5,Never wait in line,4,FALSE,-1.5,"100,000 ten years",3,Million today,5,TRUE,-2,Rewind,5,Rewind,5,FALSE,0,TRUE
-P35,Audio,Social Studies,4,11/25/2024,Never do chores,1,Never do chores,4,FALSE,-3,Million today,5,Million today,5,FALSE,0,Rewind,5,Rewind,5,FALSE,0,TRUE
-P36,Text,Media and Communications,4,11/26/2024,Never wait in line,4,Never wait in line,5,FALSE,-1,"100,000 ten years",5,Million today,5,TRUE,0,Pause,5,Rewind,4,TRUE,1,TRUE
-P37,Text,Econ,1,11/26/2024,Never wait in line,5,Never wait in line,5,FALSE,0,"100,000 ten years",5,,,TRUE,5,Rewind,5,Rewind,,FALSE,5,FALSE
-P38,Text,CS,5,,,,,,FALSE,0,,,,,FALSE,0,,,,,FALSE,0,FALSE
-P39,,,,,,,,,FALSE,0,,,,,FALSE,0,,,,,FALSE,0,FALSE
-P40,Audio,Social Studies,2,11/24/2024,Never do chores,4,Never do chores,3,FALSE,1,Million today,5,Million today,5,FALSE,0,Pause,4,Pause,4,FALSE,0,TRUE
-P41,Audio,CS,5,11/24/2024,Never wait in line,100,Never wait in line,98,FALSE,2,Million today,5,Million today,5,FALSE,0,Rewind,5,Rewind,5,FALSE,0,FALSE
-P42,Audio,Biology,3,11/24/2024,Never wait in line,4,Never wait in line,4,FALSE,0,"100,000 ten years",5,"100,000 ten years",5,FALSE,0,Pause,3,Pause,4,FALSE,-1,TRUE
-P43,Audio,EE,4,11/24/2024,Never wait in line,4,Never do chores,3,TRUE,1,"100,000 ten years",3,"100,000 ten years",3,FALSE,0,Pause,4,Pause,5,FALSE,-1,TRUE
-P44,Audio,Philosophy,2,11/24/2024,Never wait in line,4,Never wait in line,5,FALSE,-1,Million today,5,Million today,5,FALSE,0,Pause,4,Pause,5,FALSE,-1,TRUE
-P45,Audio,CS,4,11/24/2024,Never wait in line,5,Never wait in line,5,FALSE,0,"100,000 ten years",,"100,000 ten years",5,FALSE,-5,Pause,2,Pause,2,FALSE,0,FALSE
-P46,Audio,Neuro,3,11/24/2024,Never wait in line,4,Never wait in line,2,FALSE,2,Million today,3,,4,TRUE,-1,Rewind,4,Rewind,4,FALSE,0,FALSE
-P47,Text,MechE,3,11/24/2024,Never wait in line,3,Never do chores,5,TRUE,-2,Million today,5,Million today,,FALSE,5,,,,,FALSE,0,FALSE
-P48,Text,Social Studies,4,11/24/2024,Never wait in line,4,Never wait in line,4,FALSE,0,Million today,4,Million today,4,FALSE,0,Rewind,4,Rewind,4,FALSE,0,TRUE
-P49,Text,Education,2,11/24/2024,Never wait in line,5,Never wait in line,5,FALSE,0,Million today,5,Million today,5,FALSE,0,Pause,5,Pause,5,FALSE,0,TRUE
+Participant Number,Modality,Field of Study,Experience with LLMs,Date Interviewed,Q1 Starting Choice,Q1 Starting Confidence,Q1 Final Choice,Q1 Final Confidence,Q1 Flipped Choice?,Q2 Starting Choice,Q2 Starting Confidence,Q2 Final Choice,Q2 Final Confidence,Q2 Flipped Choice?,Q3 Starting Choice,Q3 Starting Confidence,Q3 Final Choice,Q3 Final Confidence,Q3 Flipped Choice?,Clean Data?
+P1,Text,CS,4,11/21/2024,Never wait in line,5,Never wait in line,5,FALSE,"100,000 ten years",5,Million today,5,TRUE,Pause,3,Pause,3,FALSE,FALSE
+P2,Text,CS,4,11/21/2024,Never wait in line,4,Never wait in line,4,FALSE,"100,000 ten years",3,Million today,4,TRUE,Rewind,5,Rewind,5,FALSE,TRUE
+P3,Audio,CS,5,11/21/2024,Never wait in line,4,Never do chores,3,TRUE,"100,000 ten years",2,Million today,2,TRUE,Pause,3,Pause,2,FALSE,TRUE
+P4,Audio,CS,5,11/21/2024,Never do chores,4,Never do chores,3,FALSE,"100,000 ten years",4,Million today,4,TRUE,Pause,4,Pause,4,FALSE,TRUE
+P5,Text,CS,5,11/21/2024,Never wait in line,4,Never wait in line,4,FALSE,Million today,5,Million today,5,FALSE,Rewind,5,Pause,2,TRUE,TRUE
+P6,Audio,"Econ, CS",3,11/21/2024,Never do chores,3.5,Never do chores,3,FALSE,"100,000 ten years",4,"100,000 ten years",4,FALSE,Rewind,5,Rewind,4,FALSE,TRUE
+P7,Text,"Comparative Literature, Education",4,11/22/2024,Never wait in line,5,Never wait in line,5,FALSE,Million today,5,Million today,5,FALSE,Pause,4,Pause,5,FALSE,TRUE
+P8,Text,CS,4,11/25/2024,Never wait in line,4,Never do chores,4,TRUE,Million today,5,Million today,5,FALSE,Rewind,3,Pause,4,TRUE,TRUE
+P9,Text,Psychology,2,11/25/2024,Never do chores,5,Never do chores,5,FALSE,Million today,4,"100,000 ten years",4,TRUE,Rewind,4,Rewind,5,FALSE,TRUE
+P10,Text,Neuro,4,11/25/2024,Never do chores,5,Never do chores,5,FALSE,"100,000 ten years",5,"100,000 ten years",5,FALSE,Pause,3,Rewind,5,TRUE,FALSE
+P11,Text,"Econ, Public Health",2,11/25/2024,Never wait in line,4,Never do chores,3,TRUE,"100,000 ten years",4,"100,000 ten years",4,FALSE,Rewind,5,Rewind,5,FALSE,TRUE
+P12,Text,Applied Math,3,11/25/2024,Never do chores,4,Never do chores,4,FALSE,"100,000 ten years",5,Million today,2,TRUE,Pause,2,Pause,2,FALSE,TRUE
+P13,Text,Neuro,2,11/25/2024,Never wait in line,5,Never wait in line,5,FALSE,Million today,4,Million today,5,FALSE,Pause,4,Rewind,4,TRUE,TRUE
+P14,Text,"Math, CS",3,11/25/2024,Never wait in line,2,Never wait in line,,FALSE,Million today,5,Million today,5,FALSE,Pause,3,Pause,2,FALSE,FALSE
+P15,Text,"MCB, CS",4,11/25/2024,Never wait in line,3,Never wait in line,4,FALSE,Million today,3,"100,000 ten years",3,TRUE,Pause,5,Pause,5,FALSE,FALSE
+P16,Text,OEB,4,11/25/2024,Never do chores,3,Never do chores,5,FALSE,Million today,5,Million today,5,FALSE,Rewind,5,Rewind,5,FALSE,TRUE
+P17,Text,"Gov, History",2,11/25/2024,Never wait in line,4,Never wait in line,5,FALSE,Million today,5,Million today,5,FALSE,Rewind,5,Rewind,5,FALSE,TRUE
+P18,Text,CS,4,11/25/2024,Never wait in line,5,Never wait in line,5,FALSE,"100,000 ten years",5,Million today,5,TRUE,Pause,5,Pause,5,FALSE,TRUE
+P19,Text,"Econ, EEPP",4,11/25/2024,Never wait in line,3,Never do chores,4,TRUE,Million today,5,Million today,5,FALSE,Rewind,4,Rewind,4,FALSE,TRUE
+P20,Text,"EE, CS",4,11/21/2024,Never wait in line,4,Never wait in line,4,FALSE,Million today,4,Million today,4,FALSE,Rewind,3,Pause,3,TRUE,TRUE
+P21,Audio,AFVS,3,11/21/2024,Never wait in line,4,Never wait in line,4,FALSE,Million today,4,Million today,4,FALSE,Pause,5,Pause,5,FALSE,TRUE
+P22,Audio,CS,4,11/22/2024,Never wait in line,5,Never wait in line,5,FALSE,"100,000 ten years",2,Million today,5,TRUE,Rewind,5,Rewind,4,FALSE,TRUE
+P23,Audio,Math,3,11/22/2024,Never wait in line,4,Never wait in line,3,FALSE,Million today,3,"100,000 ten years",3,TRUE,Rewind,4,Rewind,4,FALSE,TRUE
+P24,Text,"CS, Gov",5,11/22/2024,Never do chores,5,Never do chores,5,FALSE,Million today,3.5,Million today,4,FALSE,Pause,2,Pause,3,FALSE,TRUE
+P25,Text,CS,5,11/22/2024,Never wait in line,5,Never wait in line,5,FALSE,Million today,5,Million today,5,FALSE,Rewind,5,Rewind,5,FALSE,TRUE
+P26,Audio,EE,4,11/24/2024,Never wait in line,5,Never wait in line,5,FALSE,Million today,5,Million today,5,FALSE,Pause,4,Pause,5,FALSE,TRUE
+P27,Audio,CSE,5,11/24/2024,Never do chores,3,Never do chores,2,FALSE,Million today,5,Million today,5,FALSE,Pause,2,Rewind,3,TRUE,TRUE
+P28,Audio,CS,4,11/24/2024,Never wait in line,3,Never wait in line,4,FALSE,Million today,4,Million today,5,FALSE,Rewind,5,Rewind,5,FALSE,FALSE
+P29,Audio,AM,4,11/24/2024,Never wait in line,3,Never do chores,3.5,TRUE,"100,000 ten years",4,Million today,4,TRUE,Pause,4,Pause,4,FALSE,TRUE
+P30,Audio,CS,4,11/24/2024,Never wait in line,4,Never wait in line,3,FALSE,Million today,5,Million today,5,FALSE,Pause,3,Rewind,4,TRUE,TRUE
+P31,Audio,"CS, Neuro",4,11/24/2024,Never do chores,3.5,Never do chores,4,FALSE,"100,000 ten years",5,"100,000 ten years",4.5,FALSE,Pause,3,Pause,3.5,FALSE,TRUE
+P32,Audio,Biology,2,11/24/2024,Never do chores,4,Never wait in line,5,TRUE,Million today,5,Million today,4,FALSE,Rewind,5,Rewind,5,FALSE,TRUE
+P33,Audio,History,1,11/25/2024,Never wait in line,5,Never wait in line,5,FALSE,"100,000 ten years",5,Million today,4,TRUE,Rewind,5,Rewind,5,FALSE,TRUE
+P34,Audio,CS,5,11/25/2024,Never wait in line,2.5,Never wait in line,4,FALSE,"100,000 ten years",3,Million today,5,TRUE,Rewind,5,Rewind,5,FALSE,TRUE
+P35,Audio,Social Studies,4,11/25/2024,Never do chores,1,Never do chores,4,FALSE,Million today,5,Million today,5,FALSE,Rewind,5,Rewind,5,FALSE,TRUE
+P36,Text,Media and Communications,4,11/26/2024,Never wait in line,4,Never wait in line,5,FALSE,"100,000 ten years",5,Million today,5,TRUE,Pause,5,Rewind,4,TRUE,TRUE
+P37,Text,Econ,1,11/26/2024,Never wait in line,5,Never wait in line,5,FALSE,"100,000 ten years",5,,,TRUE,Rewind,5,Rewind,,FALSE,FALSE
+P38,Text,CS,5,,,,,,FALSE,,,,,FALSE,,,,,FALSE,FALSE
+P39,,,,,,,,,FALSE,,,,,FALSE,,,,,FALSE,FALSE
+P40,Audio,Social Studies,2,11/24/2024,Never do chores,4,Never do chores,3,FALSE,Million today,5,Million today,5,FALSE,Pause,4,Pause,4,FALSE,TRUE
+P41,Audio,CS,5,11/24/2024,Never wait in line,100,Never wait in line,98,FALSE,Million today,5,Million today,5,FALSE,Rewind,5,Rewind,5,FALSE,FALSE
+P42,Audio,Biology,3,11/24/2024,Never wait in line,4,Never wait in line,4,FALSE,"100,000 ten years",5,"100,000 ten years",5,FALSE,Pause,3,Pause,4,FALSE,TRUE
+P43,Audio,EE,4,11/24/2024,Never wait in line,4,Never do chores,3,TRUE,"100,000 ten years",3,"100,000 ten years",3,FALSE,Pause,4,Pause,5,FALSE,TRUE
+P44,Audio,Philosophy,2,11/24/2024,Never wait in line,4,Never wait in line,5,FALSE,Million today,5,Million today,5,FALSE,Pause,4,Pause,5,FALSE,TRUE
+P45,Audio,CS,4,11/24/2024,Never wait in line,5,Never wait in line,5,FALSE,"100,000 ten years",,"100,000 ten years",5,FALSE,Pause,2,Pause,2,FALSE,FALSE
+P46,Audio,Neuro,3,11/24/2024,Never wait in line,4,Never wait in line,2,FALSE,Million today,3,,4,TRUE,Rewind,4,Rewind,4,FALSE,FALSE
+P47,Text,MechE,3,11/24/2024,Never wait in line,3,Never do chores,5,TRUE,Million today,5,Million today,,FALSE,,,,,FALSE,FALSE
+P48,Text,Social Studies,4,11/24/2024,Never wait in line,4,Never wait in line,4,FALSE,Million today,4,Million today,4,FALSE,Rewind,4,Rewind,4,FALSE,TRUE
+P49,Text,Education,2,11/24/2024,Never wait in line,5,Never wait in line,5,FALSE,Million today,5,Million today,5,FALSE,Pause,5,Pause,5,FALSE,TRUE
