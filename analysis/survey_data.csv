@@ -36,7 +36,7 @@ P34,Audio,CS,5,11/25/2024,Never wait in line,2.5,Never wait in line,4,FALSE,"100
 P35,Audio,Social Studies,4,11/25/2024,Never do chores,1,Never do chores,4,FALSE,Million today,5,Million today,5,FALSE,Rewind,5,Rewind,5,FALSE,TRUE
 P36,Text,Media and Communications,4,11/26/2024,Never wait in line,4,Never wait in line,5,FALSE,"100,000 ten years",5,Million today,5,TRUE,Pause,5,Rewind,4,TRUE,TRUE
 P37,Text,Econ,1,11/26/2024,Never wait in line,5,Never wait in line,5,FALSE,"100,000 ten years",5,,,TRUE,Rewind,5,Rewind,,FALSE,FALSE
-P38,Text,CS,5,,,,,,FALSE,,,,,FALSE,,,,,FALSE,FALSE
+P38,Text,CS,5,11/26/2024,Never wait in line,5,Never wait in line,5,FALSE,Million today,5,Million today,5,FALSE,Pause,3,Pause,4,FALSE,TRUE
 P39,,,,,,,,,FALSE,,,,,FALSE,,,,,FALSE,FALSE
 P40,Audio,Social Studies,2,11/24/2024,Never do chores,4,Never do chores,3,FALSE,Million today,5,Million today,5,FALSE,Pause,4,Pause,4,FALSE,TRUE
 P41,Audio,CS,5,11/24/2024,Never wait in line,100,Never wait in line,98,FALSE,Million today,5,Million today,5,FALSE,Rewind,5,Rewind,5,FALSE,FALSE
