@@ -277,6 +277,15 @@ Comparison: Word count is 6 words before and 6 words after.
 
 ---
 
+Participant P38
+Modality: Text
+Familiarity with LLMs: 5
+Before: because waiting in line sucks
+After: because waiting in line still sucks more than doing chores
+Comparison: Word count is 5 words before and 10 words after.
+
+---
+
 Participant P40
 Modality: Audio
 Familiarity with LLMs: 2
