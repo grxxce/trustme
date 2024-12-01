@@ -1,0 +1,333 @@
+Participant P2
+Modality: Text
+Familiarity with LLMs: 4
+Before: because sometimes doing chores can help to distract me when im stressed and i dont find it particualry a chore
+After: because just like you said, time is very important so i would not want to spend my time doing anything meaningless and i would much rather spend it doing things that can either bring me join or make me feel less stressed
+Comparison: Word count is 20 words before and 42 words after.
+
+---
+
+Participant P3
+Modality: Audio
+Familiarity with LLMs: 5
+Before: Good question I think that chores or something that you kind of have to do to enjoy life and to have like a meaningful and functional life lines relevant there is a bore no productivity you're not really doing anything so that's the reason why
+After: Yes I do
+Comparison: Word count is 45 words before and 3 words after.
+
+---
+
+Participant P4
+Modality: Audio
+Familiarity with LLMs: 5
+Before: I do chores more frequently than waiting in line
+After: same reason as before
+Comparison: Word count is 9 words before and 4 words after.
+
+---
+
+Participant P5
+Modality: Text
+Familiarity with LLMs: 5
+Before: I like doing chores and also that the chores are helpful.
+After: I don't like waiting in line that much and I like doing chores
+Comparison: Word count is 11 words before and 13 words after.
+
+---
+
+Participant P6
+Modality: Audio
+Familiarity with LLMs: 3
+Before: I chose that because I'm doing chores or something doing and my daughter spend my time doing something more productive
+After: I feel bad because doing chores this time consuming and I would rather spend that time doing something more productive or something that I have an interesting
+Comparison: Word count is 20 words before and 27 words after.
+
+---
+
+Participant P7
+Modality: Text
+Familiarity with LLMs: 4
+Before: Waiting in line is a waste of time. While doing chores, I can listen to a podcast or music, watch a TV show, or do something else fun. I can't do that while waiting in line. Also, I think that doing chores instills some discipline. Waiting in line is just an inefficient use of time.
+After: It makes you consider the benefits and costs of both activities. For me, I came to an easy conclusion, but others might value certain things differently.
+Comparison: Word count is 55 words before and 26 words after.
+
+---
+
+Participant P8
+Modality: Text
+Familiarity with LLMs: 4
+Before: I do not mind doing house chores and waiting in line is a bigger inconvinience to me than house chores
+After: In the long run, it would probably give me more time back, as you mentioned
+Comparison: Word count is 20 words before and 15 words after.
+
+---
+
+Participant P9
+Modality: Text
+Familiarity with LLMs: 2
+Before: Because waiting in line takes less effort than doing chores.
+After: I would still not do chores again
+Comparison: Word count is 10 words before and 7 words after.
+
+---
+
+Participant P11
+Modality: Text
+Familiarity with LLMs: 2
+Before: Because I had to wait in line this morning, it was quite time consuming
+After: because it would remove a mental burden off of me
+Comparison: Word count is 14 words before and 10 words after.
+
+---
+
+Participant P12
+Modality: Text
+Familiarity with LLMs: 3
+Before: because i feel like chores like doing laundry/cleaning the dorm/filling out forms are unavoidable tasks that have to get done sometimes but waiting in line is somewhat more voluntary (I'm usually waiting in line for something I really care/am excited about) and it's usually more of a choice
+After: i feel like i spend more time doing chores each week than waiting in line
+Comparison: Word count is 48 words before and 15 words after.
+
+---
+
+Participant P13
+Modality: Text
+Familiarity with LLMs: 2
+Before: because i think chores are really productive and help people or your family but waiting in line is a lot of time wasted
+After: i think waiting in line wastes time
+Comparison: Word count is 23 words before and 7 words after.
+
+---
+
+Participant P16
+Modality: Text
+Familiarity with LLMs: 4
+Before: because there are more hypothetical situations where not doing chores would be helpful/convinient. i would save more time and energy overall
+After: because your counterargument does not address the fact that the benefit of not waiting in line - saving time - is the same benefit as not doing chores. however, not doing chores has a greater magnitude of impact compared to waiting in line  - i save more time
+Comparison: Word count is 21 words before and 48 words after.
+
+---
+
+Participant P17
+Modality: Text
+Familiarity with LLMs: 2
+Before: Chores can keep you busy/help structure your time. Ie. breaking up work periods with chores. Waiting in line is simply losing time.
+After: because of the time saved, and the ability to structure your time. Also they provide a sense of accomplishment, ie things like making your bed.
+Comparison: Word count is 22 words before and 25 words after.
+
+---
+
+Participant P18
+Modality: Text
+Familiarity with LLMs: 4
+Before: because I dont mind chores
+After: both require time but at least doing chores lets you distract yourself during that time
+Comparison: Word count is 5 words before and 15 words after.
+
+---
+
+Participant P19
+Modality: Text
+Familiarity with LLMs: 4
+Before: you can pay someone to do your chores
+After: chores are a part of your daily life and impact your quality of living
+Comparison: Word count is 8 words before and 14 words after.
+
+---
+
+Participant P20
+Modality: Text
+Familiarity with LLMs: 4
+Before: I don't mind doing chores and waiting in line feels more painful
+After: the same reasons as above
+Comparison: Word count is 12 words before and 5 words after.
+
+---
+
+Participant P21
+Modality: Audio
+Familiarity with LLMs: 3
+Before: cuz I feel like my life would lose purpose if I didn't have any chores to do for the rest of it
+After: one because partially I'm stubborn and two because  I would need much more information on why I would never have to do chores again to fully accept your argument because maybe I never have to sweep the floor again but how is it getting sweeped is it just magically happening and if I wash my clothes I get to choose if there's a shirt that I really want to wear the next day I can choose to wash it early or not early but sooner than maybe I would have
+Comparison: Word count is 22 words before and 90 words after.
+
+---
+
+Participant P22
+Modality: Audio
+Familiarity with LLMs: 4
+Before: I think I am more inclined towards  doing chores because I feel like there is some importance in it but waiting 9 doesn't really help me in any sense so if I would if I am switches one of the two then I'll say okay
+After: I still hold on to the fact that
+Comparison: Word count is 45 words before and 8 words after.
+
+---
+
+Participant P23
+Modality: Audio
+Familiarity with LLMs: 3
+Before: cuz I don't mind yours
+After: I choose that because of tonight enjoy the chores and they give me a break for my day-to-day life as well as I didn't feel that your arguments were compelling enough and I felt that they were rather biased
+Comparison: Word count is 5 words before and 39 words after.
+
+---
+
+Participant P24
+Modality: Text
+Familiarity with LLMs: 5
+Before: I do chores more than I wait in line. Intuitively, I think the cumulative time I spend doing chores is orders of magnitude greater than the time I spend waiting in a given line.
+After: As I explained before, I would still stick with my initial option of never doing chores again because I find the overall arguments for my option more convincing. Also, I just personally dislike doing chores and would rather never have to do them again.
+Comparison: Word count is 34 words before and 44 words after.
+
+---
+
+Participant P25
+Modality: Text
+Familiarity with LLMs: 5
+Before: Because the fulfilment that comes after completing chores is worth so I would want still do chores. Also, I personally enjoy doing chores so the process itself is worth while. This is opposed to waiting in line, where even though the joy of finally being next is great, I have not enjoyed the process of being in line.
+After: For similar reasons I mentioned plus the saving time reason that you suggestion. However, I would argue that by choosing not to do chores, one can save time just as much as not having to wait in line so the saving time point isn't much strong. I still still to my point of enjoying the process of doing chores while I don't enjoy the process of being in line.
+Comparison: Word count is 58 words before and 69 words after.
+
+---
+
+Participant P26
+Modality: Audio
+Familiarity with LLMs: 4
+Before: because I want to do my chores  I'm going to want to wait online
+After: because
+Comparison: Word count is 14 words before and 1 words after.
+
+---
+
+Participant P27
+Modality: Audio
+Familiarity with LLMs: 5
+Before: I think on average I it takes more time for me to do chores then it does then I spend waiting in line
+After: just because I generally don't interact with activities that I have to wait in line for it like if that was a larger part of my life then I would probably choose that but just like based on my first reasoning that I spend more time doing chores still yeah
+Comparison: Word count is 23 words before and 50 words after.
+
+---
+
+Participant P29
+Modality: Audio
+Familiarity with LLMs: 4
+Before: because I feel like there's a lot of things that  there's long lines and long Waits and if I don't have to wait in line then I'll get  free stuff like clothes shopping  food definite food going to restaurants no line  food quick
+After: because of a more stress-free life and more motivation to like do other things like instead of doing chores I spend that time doing homework or like you said spending time with my family so I feel like it'll be more beneficial in the long run to not have to do any chores and just skip lines cuz I probably don't I probably do more tours spend more time doing chores than do I spend in lines
+Comparison: Word count is 43 words before and 77 words after.
+
+---
+
+Participant P30
+Modality: Audio
+Familiarity with LLMs: 4
+Before: because if you never have to wait in line again you can get access to different things faster than other people like certain  sales of different items or certain experiences or different things like that you can just skip the line and get straight in or get tickets to events and everything's like that
+After: for the same reasons I outline before I still think that the tangible value of this choice is worth more than some of the things that you listed
+Comparison: Word count is 54 words before and 28 words after.
+
+---
+
+Participant P31
+Modality: Audio
+Familiarity with LLMs: 4
+Before: let's see yeah so again I think that just waiting in line  is less of a bother less of a bother something to me  I enjoy you know just kind of the moment of rest that gives me chores are just more of an annoyance
+After: I think  same reasons as before as you said  doing chores is a big inconvenience and that time could be dedicated to doing other things exploring Hobbies spending time with people  waiting in line is necessary part of life and while it isn't inconvenience I would say it constitutes  less time than than doing chores
+Comparison: Word count is 45 words before and 55 words after.
+
+---
+
+Participant P32
+Modality: Audio
+Familiarity with LLMs: 2
+Before: because I feel like doing waiting in line takes more time than doing chores
+After: my line of thinking was that it would save me time and nearly every day to day interaction and I would have had more time to do things I truly enjoy
+Comparison: Word count is 14 words before and 31 words after.
+
+---
+
+Participant P33
+Modality: Audio
+Familiarity with LLMs: 1
+Before: I think chores build character and if I had to pick one or the other I'd rather I'd rather stop wasting my time waiting in line
+After: I still value personal character growth over  just not being able not doing chores although I can see the logic that is being explained although it does not convince me to change my answer
+Comparison: Word count is 26 words before and 34 words after.
+
+---
+
+Participant P34
+Modality: Audio
+Familiarity with LLMs: 5
+Before: I think time is of great value  time is money
+After: because I realized through some of the arguments you made that these arguments can also be applied to waiting in the line and I just may be realized how much you know I also do enjoy doing basic chores as well sometimes
+Comparison: Word count is 10 words before and 42 words after.
+
+---
+
+Participant P35
+Modality: Audio
+Familiarity with LLMs: 4
+Before: because chores  are annoying
+After: which one do you want choose  I want to choose
+Comparison: Word count is 4 words before and 10 words after.
+
+---
+
+Participant P36
+Modality: Text
+Familiarity with LLMs: 4
+Before: because chores make me feel productive
+After: Because I still like doing chores
+Comparison: Word count is 6 words before and 6 words after.
+
+---
+
+Participant P40
+Modality: Audio
+Familiarity with LLMs: 2
+Before: because I don't want to do chores and I would rather be having to wait in line for a little bit rather than have to actually do an action
+After: because  not doing drug would give me more freedom over my time as well as being able to relax at home without worrying about doing chores
+Comparison: Word count is 29 words before and 26 words after.
+
+---
+
+Participant P42
+Modality: Audio
+Familiarity with LLMs: 3
+Before: because I don't like waiting in lines
+After: because I don't feel like chores take up a huge amount of my time
+Comparison: Word count is 7 words before and 14 words after.
+
+---
+
+Participant P43
+Modality: Audio
+Familiarity with LLMs: 4
+Before: because waiting in line takes up a lot of time and I feel like chores I feel like I'm doing something productive
+After: because of the reasons previously stated about having more time to do more fun things and spend time with family instead of like the occasional  standing in line and even standing in line give me more social and fun  than doing chores
+Comparison: Word count is 22 words before and 42 words after.
+
+---
+
+Participant P44
+Modality: Audio
+Familiarity with LLMs: 2
+Before: because I feel like sometimes doing chores can be a therapeutic where I was waiting in a line as no benefit emotionally
+After: because  I like having time to do like  I appreciate the times but I'm sure that the meditative task and yes I can save time but I can also save time by not waiting in line and that is a more frustrating and less fulfilling waste of time
+Comparison: Word count is 22 words before and 48 words after.
+
+---
+
+Participant P48
+Modality: Text
+Familiarity with LLMs: 4
+Before: Because I enjoy some chores but I truly loath waiting for other people to get out of my way
+After: Because I hate waiting for other people to get out of my way
+Comparison: Word count is 19 words before and 13 words after.
+
+---
+
+Participant P49
+Modality: Text
+Familiarity with LLMs: 2
+Before: Chores can be healthy and fun
+After: Based on my own preference.
+Comparison: Word count is 6 words before and 5 words after.
+
+---
+
