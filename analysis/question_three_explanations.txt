@@ -277,6 +277,15 @@ Comparison: Word count is 20 words before and 8 words after.
 
 ---
 
+Participant P38
+Modality: Text
+Familiarity with LLMs: 5
+Before: sometimes i need time for myself
+After: i dont need a rewind to do all those things
+Comparison: Word count is 6 words before and 10 words after.
+
+---
+
 Participant P40
 Modality: Audio
 Familiarity with LLMs: 2

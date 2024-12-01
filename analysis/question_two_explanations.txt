@@ -277,6 +277,15 @@ Comparison: Word count is 26 words before and 22 words after.
 
 ---
 
+Participant P38
+Modality: Text
+Familiarity with LLMs: 5
+Before: compound interest
+After: compound interest
+Comparison: Word count is 2 words before and 2 words after.
+
+---
+
 Participant P40
 Modality: Audio
 Familiarity with LLMs: 2
